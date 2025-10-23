@@ -1,5 +1,7 @@
 @import "tailwindcss";
-@import "tw-animate-css";
+
+/* 导入 Inter 字体 - 现代无衬线字体，与设计图风格相似 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -59,12 +61,32 @@ a:hover {
   color: #535bf2;
 }
 
+/* Sidebar 链接样式覆盖 */
+aside a {
+  color: white !important;
+  text-decoration: none !important;
+  font-family: 'Arial Black', 'Arial Bold', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+aside a:hover {
+  color: #fbbf24 !important; /* amber-400 */
+}
+
+/* Sidebar 整体字体设置 */
+aside {
+  font-family: 'Arial Black', 'Arial Bold', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  padding: 0;
   min-height: 100vh;
+  font-family: inherit;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1 {

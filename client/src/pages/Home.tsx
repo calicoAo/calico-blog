@@ -1,13 +1,12 @@
+// src/pages/Home.tsx
 import Sidebar from "@/components/layout/Sidebar";
+import MainContent from "@/components/layout/MainContent";
 
 export default function Home() {
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      {/* 右侧主内容区域 */}
-      <main className="flex-1 ml-[25%] p-10">
-        {/* BlogGrid 等内容 */}
-      </main>
+      <MainContent />
     </div>
   );
 }
