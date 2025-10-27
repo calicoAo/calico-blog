@@ -43,7 +43,7 @@ const ArticleNavigation: React.FC<ArticleNavigationProps> = ({
         {previousArticle ? (
           <motion.button
             onClick={() => onNavigate(previousArticle.id)}
-            className="flex-1 p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-200"
+            className="flex-1 p-4 text-left bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200 border border-gray-200 shadow-sm hover:shadow-md"
             whileHover={{ scale: 1.02, x: -4 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -58,7 +58,7 @@ const ArticleNavigation: React.FC<ArticleNavigationProps> = ({
         {nextArticle ? (
           <motion.button
             onClick={() => onNavigate(nextArticle.id)}
-            className="flex-1 p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-200"
+            className="flex-1 p-4 text-right bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200 border border-gray-200 shadow-sm hover:shadow-md"
             whileHover={{ scale: 1.02, x: 4 }}
             whileTap={{ scale: 0.98 }}
           >

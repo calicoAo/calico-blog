@@ -81,9 +81,9 @@ const ArticleTOC: React.FC<ArticleTOCProps> = ({ content }) => {
   if (tocItems.length === 0) return null;
 
   return (
-    <aside className="w-64 p-6">
+    <aside className="w-64 p-6 bg-linear-to-b from-sky-50 to-blue-50 border-l border-gray-200">
       <div className="sticky top-6">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">目录</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">目录</h3>
         <nav className="space-y-2">
           {tocItems.map((item) => (
             <a

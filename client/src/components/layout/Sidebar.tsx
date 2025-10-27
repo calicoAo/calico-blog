@@ -88,12 +88,13 @@ const Sidebar = () => {
         transition={{ duration: 0.8, ease: "easeOut" }}
         
         // 样式：相对定位、背景图、弹性布局
-        className="w-[25%] min-w-[240px] h-screen text-white flex flex-col items-center py-8 relative"
+        className="w-[25%] min-w-[240px] h-screen text-white flex flex-col items-center py-8 relative [&_a]:text-white [&_a]:no-underline [&_a]:font-black [&_a]:uppercase [&_a]:tracking-wide hover:[&_a]:text-amber-300 [&_a]:transition-colors [&_a]:duration-200"
         style={{
           backgroundImage: `url(${sidebarBackground})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          fontFamily: "'Arial Black', 'Arial Bold', 'Helvetica Neue', Arial, sans-serif"
         }}
       >
       {/* 背景遮罩层 - 确保文字清晰可见 */}
