@@ -75,11 +75,11 @@ const Sidebar = () => {
   return (
     <>
       {/* 纸飞机组件 */}
-      <PaperPlane 
+      {/* <PaperPlane 
         logoSelector="[data-logo]"
         size="md"
         debug={true}
-      />
+      /> */}
       
       <motion.aside
         // 进入动画：从左侧滑入并淡入
@@ -87,8 +87,8 @@ const Sidebar = () => {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         
-        // 样式：固定定位、背景图、弹性布局
-        className="fixed left-0 top-0 h-full w-[25%] min-w-[240px] text-white flex flex-col items-center py-8 z-10"
+        // 样式：相对定位、背景图、弹性布局
+        className="w-[25%] min-w-[240px] h-screen text-white flex flex-col items-center py-8 relative"
         style={{
           backgroundImage: `url(${sidebarBackground})`,
           backgroundSize: 'cover',
@@ -100,9 +100,7 @@ const Sidebar = () => {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
       
       {/* 内容区域 - 相对定位确保在遮罩层之上 */}
-      <div className="relative z-10 flex flex-col items-end justify-center h-full w-full pr-8">
-        {/* 主要内容区域 */}
-        <div className="flex flex-col items-end">
+      <div className="relative z-10 flex flex-col items-end justify-center h-full w-full pr-8 mb-48">
         {/* Logo 区域 - 顶部 */}
         <div className="mb-8">
           <div 
@@ -121,10 +119,8 @@ const Sidebar = () => {
         </div>
         
         {/* 主导航菜单 - 中间区域 */}
-        <nav className="flex flex-col gap-6">
+        <nav className="flex flex-col gap-6 ">
           {navItems.map((item) => {
-      
-            
             return (
               <motion.a
                 key={item.label}
@@ -136,7 +132,7 @@ const Sidebar = () => {
                   textShadow: "0px 0px 8px rgba(255,255,255,0.6)",
                 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className={`cursor-pointer select-none text-right text-2xl text-white font-black uppercase tracking-wide mr-8 hover:text-amber-300 transition-colors duration-200 no-underline`}
+                className="cursor-pointer select-none text-right text-2xl text-white font-black uppercase tracking-wide mr-8 hover:text-amber-300 transition-colors duration-200 no-underline"
                 style={{ color: 'white' }}
               >
                 {item.label}
@@ -144,14 +140,14 @@ const Sidebar = () => {
             );
           })}
         </nav>
-
-        </div>
         
-        {/* 底部位置信息 - 绝对定位在底部左侧 */}
-        <div className="absolute bottom-4 left-4 text-sm text-white font-normal">
+       
+       
+      </div>
+       {/* 底部位置信息 - 绝对定位在底部左侧 */}
+      <div className="absolute bottom-4 left-4 text-sm text-white font-normal">
           chengdu, sichuan, china
         </div>
-      </div>
     </motion.aside>
     </>
   );

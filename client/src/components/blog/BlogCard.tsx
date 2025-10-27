@@ -12,12 +12,13 @@
  */
 
 import React from "react";
-import { motion } from "framer-motion";
 
 /**
  * 博客卡片组件的 Props 类型定义
  */
 interface BlogCardProps {
+  /** 博客ID */
+  id?: number;
   /** 博客标题 */
   title: string;
   /** 博客描述内容 */
@@ -26,6 +27,10 @@ interface BlogCardProps {
   category: string;
   /** 发布日期 */
   date: string;
+  /** 卡片背景色类名 */
+  color?: string;
+  /** 是否显示心形图标 */
+  showHeart?: boolean;
 }
 
 /**
@@ -38,54 +43,52 @@ interface BlogCardProps {
  * @returns JSX 元素
  */
 const BlogCard: React.FC<BlogCardProps> = ({
+  id,
   title,
   description,
   category,
   date,
+  color = "bg-amber-50",
+  showHeart = false,
 }) => {
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <motion.div
-      // 进入动画：从下方淡入并上浮
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      viewport={{ once: true }} // 只触发一次动画
-      
-      // 悬停动画：轻微放大、上浮并添加阴影
-      whileHover={{
-        scale: 1.03,
-        y: -4,
-        boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-      }}
-      
-      // 样式类：半透明背景、圆角、内边距、弹性布局、阴影
-      className="bg-amber-50/80 backdrop-blur-sm rounded-xl p-5 flex flex-col justify-between shadow-sm
-                 hover:shadow-md transition-all duration-300 border border-amber-100"
+    <a
+      href={id ? `/article/${id}` : '#'}
+      className={`${color} p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col no-underline`}
     >
       {/* 主要内容区域 */}
-      <div>
-        {/* 博客标题 */}
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">
+      <div className="flex-1">
+        {/* 博客标题 - 限制显示2行 */}
+        <h2 className="text-lg font-semibold text-gray-800 mb-3 line-clamp-2">
           {title}
         </h2>
         
-        {/* 博客描述 - 限制显示行数 */}
-        <p className="text-sm text-gray-600 leading-snug mb-4 line-clamp-3">
+        {/* 博客描述 - 限制显示4行 */}
+        <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-4">
           {description}
         </p>
       </div>
 
       {/* 底部信息栏 */}
-      <div className="flex justify-between items-center text-xs text-gray-500 border-t pt-2">
-        {/* 分类标签 - 带下划线装饰 */}
-        <span className="underline decoration-amber-400">
-          {category}
-        </span>
+      <div className="flex justify-between items-center text-xs text-gray-500 border-t border-gray-200 pt-3 mt-auto">
+        {/* 分类标签 - 带心形图标和下划线，可点击跳转 */}
+        <a 
+          href={`/category/${encodeURIComponent(category)}`}
+          onClick={handleCategoryClick}
+          className="flex items-center gap-1 hover:text-blue-600 transition-colors duration-200"
+        >
+          {showHeart && <span className="text-red-500">♥</span>}
+          <span className="underline decoration-gray-400">{category}</span>
+        </a>
         
         {/* 发布日期 */}
         <span>{date}</span>
       </div>
-    </motion.div>
+    </a>
   );
 };
 

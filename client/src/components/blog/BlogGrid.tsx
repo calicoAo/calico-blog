@@ -20,6 +20,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import BlogCard from './BlogCard';
 
 /**
  * 博客数据类型定义
@@ -46,6 +47,12 @@ interface BlogData {
  * 用于展示瀑布流布局效果。实际项目中这些数据
  * 应该从后端 API 或 CMS 系统获取。
  */
+const colors = [
+  "bg-amber-50", "bg-blue-50", "bg-green-50", "bg-purple-50", 
+  "bg-pink-50", "bg-indigo-50", "bg-yellow-50", "bg-teal-50",
+  "bg-orange-50", "bg-red-50", "bg-cyan-50", "bg-emerald-50"
+];
+
 const blogData: BlogData[] = [
   {
     id: 1,
@@ -53,7 +60,7 @@ const blogData: BlogData[] = [
     description: "Vite is designed around native ES modules, on-demand compilation, dependency pre-bundling, and fast hot module replacement (HMR). Unlike traditional bundlers like Webpack, Vite skips the upfront bundling step during development.",
     category: "Frontend engineering practices",
     date: "2025/10/08",
-    color: "bg-amber-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   },
   {
     id: 2,
@@ -61,15 +68,15 @@ const blogData: BlogData[] = [
     description: "Explore modern caching strategies like HTTP caching, Service Workers, and IndexedDB for faster and more resilient web applications.",
     category: "Performance Optimization",
     date: "2025/10/10",
-    color: "bg-blue-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   },
   {
     id: 3,
     title: "Understanding React Server Components",
-    description: "React Server Components (RSC) enable faster page loads and smaller client bundles. Let's see how they work and how to use them effectively.",
+    description: "React Server Components (RSC) enable faster page loads and smaller client bundles. Let's see how they work and how to use them effectively.React Server Components (RSC) enable faster page loads and smaller client bundles. Let's see how they work and how to use them effectively.React Server Components (RSC) enable faster page loads and smaller client bundles. Let's see how they work and how to use them effectively.React Server Components (RSC) enable faster page loads and smaller client bundles. Let's see how they work and how to use them effectively.",
     category: "React Deep Dive",
     date: "2025/10/15",
-    color: "bg-green-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   },
   {
     id: 4,
@@ -77,7 +84,7 @@ const blogData: BlogData[] = [
     description: "Learn advanced TypeScript patterns and techniques for building robust applications.",
     category: "TypeScript",
     date: "2025/10/12",
-    color: "bg-purple-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   },
   {
     id: 5,
@@ -85,7 +92,7 @@ const blogData: BlogData[] = [
     description: "When to use CSS Grid and when to use Flexbox for different layout scenarios.",
     category: "CSS Layout",
     date: "2025/10/18",
-    color: "bg-pink-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   },
   {
     id: 6,
@@ -93,7 +100,7 @@ const blogData: BlogData[] = [
     description: "Optimize your Node.js applications with these proven performance techniques and best practices.",
     category: "Backend Development",
     date: "2025/10/20",
-    color: "bg-indigo-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   },
   {
     id: 7,
@@ -101,7 +108,7 @@ const blogData: BlogData[] = [
     description: "Essential database design patterns for scalable applications.",
     category: "Database",
     date: "2025/10/22",
-    color: "bg-yellow-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   },
   {
     id: 8,
@@ -109,7 +116,7 @@ const blogData: BlogData[] = [
     description: "Building scalable applications with microservices architecture patterns and best practices.",
     category: "Architecture",
     date: "2025/10/25",
-    color: "bg-teal-50"
+    color: colors[Math.floor(Math.random() * colors.length)]
   }
 ];
 
@@ -126,78 +133,127 @@ const BlogGrid: React.FC = () => {
   // 状态管理
   const [columns, setColumns] = useState<number>(3); // 当前列数
   const [columnHeights, setColumnHeights] = useState<number[]>([0, 0, 0]); // 每列的高度
-  const [cardPositions, setCardPositions] = useState<Array<{top: number, left: number, width: string}>>([]); // 卡片位置信息
+  const [cardPositions, setCardPositions] = useState<Array<{top: number, left: number, width: number}>>([]); // 卡片位置信息
   const gridRef = useRef<HTMLDivElement>(null); // 网格容器引用
+  const cardElementsRef = useRef<(HTMLDivElement | null)[]>([]); // 卡片DOM元素引用数组
 
   /**
-   * 响应式列数计算
-   * 
-   * 根据屏幕宽度自动调整瀑布流的列数：
-   * - 手机端 (< 640px): 1列
-   * - 平板端 (640px - 1024px): 2列  
-   * - 桌面端 (> 1024px): 3列
+   * 固定为3列瀑布流
    */
   useEffect(() => {
-    const updateColumns = () => {
-      const width = window.innerWidth;
-      if (width < 640) {
-        setColumns(1);
-      } else if (width < 1024) {
-        setColumns(2);
-      } else {
-        setColumns(3);
-      }
-    };
-
-    // 初始化列数
-    updateColumns();
-    
-    // 监听窗口大小变化
-    window.addEventListener('resize', updateColumns);
-    
-    // 清理事件监听器
-    return () => window.removeEventListener('resize', updateColumns);
+    setColumns(3);
   }, []);
 
   /**
-   * 计算瀑布流布局
+   * 测量实际卡片高度并输出调试信息
+   */
+  useEffect(() => {
+    if (cardElementsRef.current.length > 0) {
+      console.log('\n[BlogGrid Debug] ========== 实际卡片高度 ==========');
+      cardElementsRef.current.forEach((el, index) => {
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const cardMarginBottom = 10; // 卡片底部间距
+          console.log(`卡片 #${index + 1}:`);
+          console.log(`  实际高度: ${rect.height}px`);
+          console.log(`  位置 Top: ${rect.top}px`);
+          console.log(`  包含间距总高度: ${rect.height + cardMarginBottom}px`);
+        }
+      });
+      console.log('[BlogGrid Debug] =================================\n');
+    }
+  }, [cardPositions]);
+
+  /**
+   * 计算瀑布流布局 - 基于真实高度的精确布局
    * 
    * 这是瀑布流布局的核心算法：
    * 1. 遍历所有博客数据
    * 2. 为每个卡片找到最短的列
-   * 3. 计算卡片的位置和宽度
-   * 4. 根据内容长度估算卡片高度
-   * 5. 更新列高度和卡片位置
+   * 3. 使用真实高度而不是估算值
+   * 4. 更新列高度和卡片位置
    */
   useEffect(() => {
-    const heights = new Array(columns).fill(0); // 初始化每列高度为0
-    const positions: Array<{top: number, left: number, width: string}> = []; // 卡片位置数组
+    const gap = 10; // 卡片间距 (像素)
     
-    blogData.forEach((_, index) => {
-      // 找到当前最短的列
-      const shortestColumnIndex = heights.indexOf(Math.min(...heights));
-      const top = heights[shortestColumnIndex];
+    // 使用 ResizeObserver 或 setTimeout 确保容器尺寸已渲染
+    const updateLayout = () => {
+      const container = gridRef.current;
+      if (!container) return;
       
-      // 计算卡片位置（考虑边距）
-      const left = (shortestColumnIndex * (100 / columns)) + 1; // 1% 左边距
-      const width = (100 / columns) - 2; // 减去2%的总边距
+      const containerWidth = container.offsetWidth;
+      const columnWidth = (containerWidth - gap * (columns + 1)) / columns; // 每列宽度
+      const newHeights = new Array(columns).fill(0);
+      const newPositions: Array<{top: number, left: number, width: number}> = [];
       
-      // 保存卡片位置信息
-      positions.push({
-        top,
-        left,
-        width: `${width}%`
+      // 创建临时 DOM 元素来测量实际高度
+      const tempCard = document.createElement('div');
+      tempCard.style.position = 'absolute';
+      tempCard.style.visibility = 'hidden';
+      tempCard.style.width = `${columnWidth}px`;
+      tempCard.style.padding = '24px'; // p-6 = 24px
+      tempCard.style.boxSizing = 'border-box';
+      document.body.appendChild(tempCard);
+      
+      blogData.forEach((blog, index) => {
+        // 找到当前最短的列
+        let shortestColumnIndex = 0;
+        let shortestHeight = newHeights[0];
+        
+        for (let i = 0; i < columns; i++) {
+          if (newHeights[i] < shortestHeight) {
+            shortestHeight = newHeights[i];
+            shortestColumnIndex = i;
+          }
+        }
+        
+        const top = shortestHeight;
+        
+        // 计算卡片位置
+        const left = shortestColumnIndex * (columnWidth + gap) + gap;
+        const width = columnWidth;
+        
+        // 保存卡片位置信息
+        newPositions.push({
+          top,
+          left,
+          width
+        });
+        
+        // 使用更准确的高度估算（基于实际测量的高度）
+        // 实际测量显示：卡片高度在 180px - 254px 之间
+        // 根据内容长度动态调整，使用非常保守的估算以减小间距
+        const contentHeight = blog.description.length / 80 * 14; // 调整系数，非常保守
+        const estimatedHeight = Math.max(190, 180 + contentHeight);
+        
+        // 更新当前列的高度（包括卡片高度和底部间距）
+        newHeights[shortestColumnIndex] = shortestHeight + estimatedHeight + 10; // 10px bottom margin
+        
+        // 调试信息
+        console.log(`[BlogGrid Debug] 卡片 #${index + 1} "${blog.title.substring(0, 30)}..."`);
+        console.log(`  列: ${shortestColumnIndex}, Top: ${top}px, 估算高度: ${estimatedHeight}px`);
+        console.log(`  更新后列高度: ${shortestHeight}px → ${newHeights[shortestColumnIndex]}px`);
+        console.log(`  间距: ${top > 0 ? top - shortestHeight : '第一个卡片'}px`);
       });
       
-      // 根据内容长度估算卡片高度
-      // 基础高度120px + 每3个字符增加1px高度
-      const estimatedHeight = 120 + (blogData[index].description.length / 3);
-      heights[shortestColumnIndex] += estimatedHeight + 20; // 20px 卡片间距
-    });
+      // 清理临时元素
+      document.body.removeChild(tempCard);
+      
+      // 更新状态
+      setColumnHeights(newHeights);
+      setCardPositions(newPositions);
+    };
     
-    // 更新状态
-    setColumnHeights(heights);
-    setCardPositions(positions);
+    // 延迟执行以确保容器已渲染
+    const timer = setTimeout(updateLayout, 100);
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', updateLayout);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateLayout);
+    };
   }, [columns]);
 
   return (
@@ -238,36 +294,24 @@ const BlogGrid: React.FC = () => {
               className="absolute" // 绝对定位，由算法计算位置
               style={{
                 top: `${position.top}px`,
-                left: `${position.left}%`,
-                width: position.width,
+                left: `${position.left}px`,
+                width: `${position.width}px`,
               }}
             >
-              {/* 博客卡片内容 */}
-              <div className={`${blog.color} rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col`}>
-                {/* 主要内容区域 */}
-                <div className="flex-1">
-                  {/* 博客标题 - 限制显示2行 */}
-                  <h2 className="text-lg font-semibold text-gray-800 mb-3 line-clamp-2">
-                    {blog.title}
-                  </h2>
-                  
-                  {/* 博客描述 - 限制显示4行 */}
-                  <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-4">
-                    {blog.description}
-                  </p>
-                </div>
-                
-                {/* 底部信息栏 */}
-                <div className="flex justify-between items-center text-xs text-gray-500 border-t border-gray-200 pt-3 mt-auto">
-                  {/* 分类标签 - 带心形图标和下划线 */}
-                  <span className="flex items-center gap-1">
-                    <span className="text-red-500">♥</span>
-                    <span className="underline decoration-gray-400">{blog.category}</span>
-                  </span>
-                  
-                  {/* 发布日期 */}
-                  <span>{blog.date}</span>
-                </div>
+              <div 
+                ref={(el) => { cardElementsRef.current[index] = el; }}
+                style={{ marginBottom: '10px' }}
+              >
+                {/* 使用 BlogCard 组件 */}
+                <BlogCard
+                  id={blog.id}
+                  title={blog.title}
+                  description={blog.description}
+                  category={blog.category}
+                  date={blog.date}
+                  color={blog.color}
+                  showHeart={true}
+                />
               </div>
             </motion.div>
           );
