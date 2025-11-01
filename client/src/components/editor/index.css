@@ -1,0 +1,154 @@
+.tiptap {
+  @apply focus-visible:outline-none;
+}
+
+.tiptap :first-child {
+  margin-top: 0;
+}
+
+.tiptap blockquote {
+  @apply my-4 border-l-2 border-gray-300 pl-4;
+}
+
+.tiptap pre {
+  @apply my-4 rounded-md bg-gray-600 p-4 text-white;
+}
+
+.tiptap pre code {
+  @apply my-1 rounded-md bg-gray-600 p-1 text-white;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3,
+.tiptap h4,
+.tiptap h5,
+.tiptap h6 {
+  @apply my-4 leading-tight font-bold;
+}
+
+.tiptap h1 {
+  @apply text-4xl;
+}
+
+.tiptap h2 {
+  @apply text-3xl;
+}
+
+.tiptap h3 {
+  @apply text-2xl;
+}
+
+.tiptap h4,
+.tiptap h5,
+.tiptap h6 {
+  @apply text-xl;
+}
+
+.tiptap hr {
+  @apply my-6 border-t border-gray-300;
+}
+
+.tiptap ul,
+.tiptap ol {
+  @apply mx-4 mt-4 mb-4;
+}
+
+.tiptap ul {
+  @apply list-disc;
+}
+
+.tiptap ul ul {
+  @apply m-0 ml-5 list-[circle];
+}
+
+.tiptap ul ul ul {
+  @apply m-0 ml-5 list-[square];
+}
+
+.tiptap ol {
+  @apply list-decimal;
+}
+
+.tiptap ol ol {
+  @apply m-0 ml-5;
+}
+
+.tiptap ul p,
+.tiptap ol p {
+  @apply my-0;
+}
+
+.tiptap code {
+  @apply mx-1 my-1 rounded-md bg-gray-600 px-1 text-sm text-white;
+}
+
+.tiptap p {
+  @apply my-2;
+}
+
+.tiptap ul[data-type='taskList'] {
+  @apply ml-0 list-none p-0;
+}
+
+.tiptap ul[data-type='taskList'] li {
+  @apply flex items-start;
+}
+
+.tiptap ul[data-type='taskList'] li > label {
+  @apply mr-2 flex-shrink-0 flex-grow-0 select-none;
+}
+
+.tiptap ul[data-type='taskList'] li > div {
+  @apply flex-auto;
+}
+
+.tiptap ul[data-type='taskList'] input[type='checkbox'] {
+  @apply cursor-pointer;
+}
+
+.tiptap ul[data-type='taskList'] ul[data-type='taskList'] {
+  @apply m-0;
+}
+
+.tiptap a {
+  @apply cursor-pointer text-blue-500 underline;
+}
+
+.tiptap a:hover {
+  @apply text-blue-600;
+}
+
+.tiptap table {
+  @apply border-collapse border border-gray-300;
+}
+
+.tiptap table th {
+  @apply relative min-w-4 border border-gray-300 bg-gray-100 px-2 py-1 align-top font-bold;
+}
+
+.tiptap table th * {
+  @apply m-0;
+}
+
+.tiptap table td {
+  @apply relative min-w-4 border border-gray-300 px-2 py-1 align-top;
+}
+
+.tiptap table td * {
+  @apply m-0;
+}
+
+.tiptap table .selectedCell:after {
+  @apply pointer-events-none absolute top-0 right-0 bottom-0 left-0 z-[-1] bg-gray-200;
+  content: '';
+}
+
+.tiptap table .column-resize-handle {
+  @apply pointer-events-none absolute top-0 right-[-2px] bottom-[-2px] z-[2] w-[4px] bg-purple-500;
+}
+
+.tiptap.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
