@@ -56,7 +56,7 @@ const BlogTag: React.FC<BlogTagProps> = ({
     
     switch (variant) {
       case 'primary':
-        return `${baseStyles} bg-blue-100 text-blue-800`;
+        return `${baseStyles} bg-primary/20 text-primary`;
       case 'secondary':
         return `${baseStyles} bg-gray-100 text-gray-800`;
       case 'success':

@@ -14,8 +14,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { TiptapEditor } from '@/components/editor/index';
+import { useNavigate } from 'react-router-dom';
+import EditorComponent from '@/components/editor/Editor';
 import { motion } from 'framer-motion';
+import BackToHome from '@/components/ui/BackToHome';
 
 /**
  * 文章数据类型
@@ -39,6 +41,8 @@ interface ArticleFormData {
  * 文章发布页面
  */
 const ArticlePublish: React.FC = () => {
+  const navigate = useNavigate();
+  
   // 表单数据状态
   const [formData, setFormData] = useState<ArticleFormData>({
     title: '',
@@ -52,6 +56,40 @@ const ArticlePublish: React.FC = () => {
   // 保存状态
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // 分类管理状态
+  const [categories, setCategories] = useState<string[]>([
+    'Frontend engineering practices',
+    'Performance Optimization',
+    'React Deep Dive',
+    'TypeScript',
+    'CSS Layout',
+    'Backend Development',
+    'Database',
+    'Architecture'
+  ]);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+
+  // 从 localStorage 加载分类
+  useEffect(() => {
+    const savedCategories = localStorage.getItem('article_categories');
+    if (savedCategories) {
+      try {
+        const parsed = JSON.parse(savedCategories);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCategories(parsed);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    }
+  }, []);
+
+  // 保存分类到 localStorage
+  useEffect(() => {
+    localStorage.setItem('article_categories', JSON.stringify(categories));
+  }, [categories]);
 
   // 从 localStorage 加载草稿
   useEffect(() => {
@@ -87,12 +125,12 @@ const ArticlePublish: React.FC = () => {
   };
 
   // 处理编辑器内容变化
-  const handleContentChange = (content: string) => {
-    setFormData(prev => ({
-      ...prev,
-      content
-    }));
-  };
+  // const handleContentChange = (content: string) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     content
+  //   }));
+  // };
 
   // 保存草稿
   const handleSaveDraft = async () => {
@@ -128,6 +166,13 @@ const ArticlePublish: React.FC = () => {
       setIsSaving(false);
     }
   };
+  const handleContentChange = (content: string) => {
+    console.log('content', content);
+    setFormData(prev => ({
+      ...prev,
+      content
+    }));
+  };
 
   // 发布文章
   const handlePublish = async () => {
@@ -159,7 +204,7 @@ const ArticlePublish: React.FC = () => {
         setIsSaving(false);
         return;
       }
-
+      
       // 这里可以调用后端API发布文章
       // const article = await publishArticleAPI({
       //   ...formData,
@@ -183,7 +228,8 @@ const ArticlePublish: React.FC = () => {
         });
         setSaveMessage(null);
       }, 2000);
-
+      // 跳转到文章列表页面
+      navigate('/admin/articles');
       console.log('Published article:', { ...formData, status: 'published' });
     } catch (error) {
       setSaveMessage({ type: 'error', text: '发布失败，请重试' });
@@ -193,28 +239,48 @@ const ArticlePublish: React.FC = () => {
     }
   };
 
-  // 文章分类选项
-  const categories = [
-    'Frontend engineering practices',
-    'Performance Optimization',
-    'React Deep Dive',
-    'TypeScript',
-    'CSS Layout',
-    'Backend Development',
-    'Database',
-    'Architecture'
-  ];
+  // 添加分类
+  const handleAddCategory = () => {
+    const trimmed = newCategory.trim();
+    if (!trimmed) {
+      setSaveMessage({ type: 'error', text: '分类名称不能为空' });
+      return;
+    }
+    if (categories.includes(trimmed)) {
+      setSaveMessage({ type: 'error', text: '该分类已存在' });
+      return;
+    }
+    setCategories([...categories, trimmed]);
+    setNewCategory('');
+    setSaveMessage({ type: 'success', text: '分类添加成功' });
+    setTimeout(() => setSaveMessage(null), 2000);
+  };
+
+  // 删除分类
+  const handleDeleteCategory = (categoryToDelete: string) => {
+    if (formData.category === categoryToDelete) {
+      setFormData(prev => ({ ...prev, category: '' }));
+    }
+    setCategories(categories.filter(cat => cat !== categoryToDelete));
+    setSaveMessage({ type: 'success', text: '分类删除成功' });
+    setTimeout(() => setSaveMessage(null), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-tr from-sky-100 via-amber-50 to-slate-100 p-8">
       <div className="max-w-5xl mx-auto">
+        {/* 返回首页按钮 */}
+        <div className="mb-6">
+          <BackToHome />
+        </div>
+
         {/* 页面标题 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">发布文章</h1>
+          <h3 className="text-3xl font-bold text-gray-900 mb-2">发布文章</h3>
           <p className="text-gray-600">创建并发布新文章</p>
         </motion.div>
 
@@ -251,7 +317,7 @@ const ArticlePublish: React.FC = () => {
               value={formData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
               placeholder="请输入文章标题"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
             />
           </div>
 
@@ -266,14 +332,14 @@ const ArticlePublish: React.FC = () => {
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="请输入文章描述（简短介绍）"
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all resize-none"
             />
           </div>
 
           {/* 发布时间和分类 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="publishDate" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="publishDate" className="block text-sm font-semibold text-gray-700 mb-4">
                 发布时间 <span className="text-red-500">*</span>
               </label>
               <input
@@ -281,19 +347,28 @@ const ArticlePublish: React.FC = () => {
                 id="publishDate"
                 value={formData.publishDate}
                 onChange={(e) => handleInputChange('publishDate', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
               />
             </div>
 
             <div>
-              <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-2">
-                文章分类 <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="category" className="block text-sm font-semibold text-gray-700">
+                  文章分类 <span className="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowCategoryManager(!showCategoryManager)}
+                  className="text-xs text-primary hover:text-primary/80 underline"
+                >
+                  {showCategoryManager ? '收起管理' : '管理分类'}
+                </button>
+              </div>
               <select
                 id="category"
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all bg-white"
               >
                 <option value="">请选择分类</option>
                 {categories.map((cat) => (
@@ -302,6 +377,80 @@ const ArticlePublish: React.FC = () => {
                   </option>
                 ))}
               </select>
+              
+              {/* 分类管理面板 */}
+              {showCategoryManager && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-lg"
+                >
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">分类管理</h4>
+                  
+                  {/* 添加新分类 */}
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                      placeholder="输入新分类名称"
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none"
+                    />
+                    <motion.button
+                      type="button"
+                      onClick={handleAddCategory}
+                      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      添加
+                    </motion.button>
+                  </div>
+
+                  {/* 分类列表 */}
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-600 mb-2">现有分类：</p>
+                    <div className="flex flex-wrap gap-2">
+                      {categories.map((cat) => (
+                        <motion.div
+                          key={cat}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm"
+                        >
+                          <span className="text-gray-700">{cat}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                            title="删除分类"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </motion.div>
+                      ))}
+                    </div>
+                    {categories.length === 0 && (
+                      <p className="text-xs text-gray-500 text-center py-2">暂无分类，请添加新分类</p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
             </div>
           </div>
 
@@ -310,8 +459,8 @@ const ArticlePublish: React.FC = () => {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               文章内容 <span className="text-red-500">*</span>
             </label>
-            <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all">
-              <TiptapEditor
+            <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:border-transparent transition-all">
+              <EditorComponent
                 content={formData.content}
                 onChange={handleContentChange}
               />
@@ -333,7 +482,7 @@ const ArticlePublish: React.FC = () => {
             <motion.button
               onClick={handlePublish}
               disabled={isSaving}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -347,7 +496,7 @@ const ArticlePublish: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800"
+          className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary"
         >
           <p className="font-semibold mb-1">💡 提示：</p>
           <ul className="list-disc list-inside space-y-1 ml-2">

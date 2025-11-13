@@ -12,6 +12,7 @@
  */
 
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 /**
  * 博客卡片组件的 Props 类型定义
@@ -51,14 +52,18 @@ const BlogCard: React.FC<BlogCardProps> = ({
   color = "bg-amber-50",
   showHeart = false,
 }) => {
+  const navigate = useNavigate();
+
   const handleCategoryClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
+    navigate(`/articles?category=${encodeURIComponent(category)}`);
   };
 
   return (
-    <a
-      href={id ? `/article/${id}` : '#'}
-      className={`${color} p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col no-underline`}
+    <Link
+      to={id ? `/article/${id}` : '#'}
+      className={`${color} p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col no-underline block`}
     >
       {/* 主要内容区域 */}
       <div className="flex-1">
@@ -76,19 +81,19 @@ const BlogCard: React.FC<BlogCardProps> = ({
       {/* 底部信息栏 */}
       <div className="flex justify-between items-center text-xs text-gray-500 border-t border-gray-200 pt-3 mt-auto">
         {/* 分类标签 - 带心形图标和下划线，可点击跳转 */}
-        <a 
-          href={`/category/${encodeURIComponent(category)}`}
+        <button
+          type="button"
           onClick={handleCategoryClick}
-          className="flex items-center gap-1 hover:text-blue-600 transition-colors duration-200"
+          className="flex items-center gap-1 hover:text-primary transition-colors duration-200 bg-transparent border-none p-0 cursor-pointer text-inherit"
         >
           {showHeart && <span className="text-red-500">♥</span>}
           <span className="underline decoration-gray-400">{category}</span>
-        </a>
+        </button>
         
         {/* 发布日期 */}
         <span>{date}</span>
       </div>
-    </a>
+    </Link>
   );
 };
 

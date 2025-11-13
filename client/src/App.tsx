@@ -3,9 +3,12 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import { AnimatePresence, motion } from "framer-motion";
 import Home from "./pages/Home";
 import ArticleDetail from "./pages/ArticleDetail";
+import ArticleList from "./pages/ArticleList";
 import Login from "./pages/Login";
 import ArticlePublish from "./pages/ArticlePublish";
 import AccessLogs from "./pages/AccessLogs";
+import Contact from "./pages/Contact";
+import TipTapTest from "@/components/editor/test/TipTapTest.tsx";
 
 // ❗React Router 的动画要配合 AnimatePresence 使用
 function AnimatedRoutes() {
@@ -38,6 +41,32 @@ function AnimatedRoutes() {
               transition={{ duration: 0.4 }}
             >
               <ArticleDetail />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/articles"
+          element={
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <ArticleList />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/:categoryName"
+          element={
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <ArticleList />
             </motion.div>
           }
         />
@@ -77,6 +106,32 @@ function AnimatedRoutes() {
               transition={{ duration: 0.4 }}
             >
               <AccessLogs />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Contact />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/test/tiptap"
+          element={
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <TipTapTest />
             </motion.div>
           }
         />

@@ -56,14 +56,14 @@ const Sidebar = () => {
       path: "/",
     },
     {
-      label: "About",
-      icon: "about",
-      path: "/about",
+      label: "Work",
+      icon: "work",
+      path: "/works",
     },
     {
       label: "Blog",
       icon: "blog",
-      path: "/blog",
+      path: "/articles",
     },
     {
       label: "Contact",
@@ -125,7 +125,7 @@ const Sidebar = () => {
             return (
               <motion.a
                 key={item.label}
-                href={`#${item.path}`}
+                href={item.path}
                 
                 // 悬停动画：放大和发光效果
                 whileHover={{

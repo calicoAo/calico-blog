@@ -1,207 +1,228 @@
-'use client';
-import { useCurrentEditor } from '@tiptap/react';
-import {
-  Bold,
-  Italic,
-  Strikethrough,
-  Code,
-  List,
-  ListOrdered,
-  Undo2,
-  Redo2,
-  Quote,
-  Heading1,
-  Heading2,
-  Heading3,
-  Heading4,
-  Heading5,
-  Heading6,
-  Minus,
-  Eraser,
-  Type,
-  X,
-  Circle,
-} from 'lucide-react';
-// import { OssUpload } from '@/components/ui/oss-upload';
-import React from 'react';
-import { Button } from '@/components/ui/button';
+/**
+ * MenuBar 组件 - 编辑器菜单栏
+ * 
+ * 功能：
+ * - 显示当前编辑器状态
+ * - 提供编辑器操作按钮
+ * - 添加图片功能
+ * 
+ * TODO：- 添加图片功能，上传到服务器再返回图片的url -加入table功能 
+ * @author lijingru
+ * @created 2025-11-12
+ */
 
-export const MenuBar = () => {
-  const { editor } = useCurrentEditor();
-  
+import { useEditorState, type Editor } from "@tiptap/react";
+import "./styles/basic.scss";
+import { addImage } from "./AddImg";
 
-  if (!editor) {
-    return null;
-  }
+export default function MenuBar({ editor }: { editor: Editor }) {
+  // Read the current editor's state, and re-render the component when it changes
+  const editorState = useEditorState({
+    editor,
+    selector: (ctx) => {
+      return {
+        isBold: ctx.editor.isActive("bold") ?? false,
+        canBold: ctx.editor.can().chain().toggleBold().run() ?? false,
+        isItalic: ctx.editor.isActive("italic") ?? false,
+        canItalic: ctx.editor.can().chain().toggleItalic().run() ?? false,
+        isStrike: ctx.editor.isActive("strike") ?? false,
+        canStrike: ctx.editor.can().chain().toggleStrike().run() ?? false,
+        isCode: ctx.editor.isActive("code") ?? false,
+        canCode: ctx.editor.can().chain().toggleCode().run() ?? false,
+        canClearMarks: ctx.editor.can().chain().unsetAllMarks().run() ?? false,
+        isParagraph: ctx.editor.isActive("paragraph") ?? false,
+        isHeading1: ctx.editor.isActive("heading", { level: 1 }) ?? false,
+        isHeading2: ctx.editor.isActive("heading", { level: 2 }) ?? false,
+        isHeading3: ctx.editor.isActive("heading", { level: 3 }) ?? false,
+        isHeading4: ctx.editor.isActive("heading", { level: 4 }) ?? false,
+        isHeading5: ctx.editor.isActive("heading", { level: 5 }) ?? false,
+        isHeading6: ctx.editor.isActive("heading", { level: 6 }) ?? false,
+        isBulletList: ctx.editor.isActive("bulletList") ?? false,
+        isOrderedList: ctx.editor.isActive("orderedList") ?? false,
+        isCodeBlock: ctx.editor.isActive("codeBlock") ?? false,
+        isBlockquote: ctx.editor.isActive("blockquote") ?? false,
+        canUndo: ctx.editor.can().chain().undo().run() ?? false,
+        canRedo: ctx.editor.can().chain().redo().run() ?? false,
+        isJustify: ctx.editor.isActive({ textAlign: "justify" }) ?? false,
+        isHighlight: ctx.editor.isActive("highlight") ?? false,
+        isLeft: ctx.editor.isActive({ textAlign: "left" }) ?? false,
+        isCenter: ctx.editor.isActive({ textAlign: "center" }) ?? false,
+        isRight: ctx.editor.isActive({ textAlign: "right" }) ?? false,
 
-  
+      };
+    },
+  });
 
   return (
-    <div className='mb-4 flex flex-wrap items-center gap-1 rounded border bg-white px-2 py-1 shadow-sm'>
-      {/* 字体样式 */}
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={editor.isActive('bold') ? 'bg-muted' : ''}
-      >
-        <Bold className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={editor.isActive('italic') ? 'bg-muted' : ''}
-      >
-        <Italic className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        disabled={!editor.can().chain().focus().toggleStrike().run()}
-        className={editor.isActive('strike') ? 'bg-muted' : ''}
-      >
-        <Strikethrough className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={editor.isActive('bulletList') ? 'bg-muted' : ''}
-      >
-        <List className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={editor.isActive('orderedList') ? 'bg-muted' : ''}
-      >
-        <ListOrdered className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={editor.isActive('blockquote') ? 'bg-muted' : ''}
-      >
-        <Quote className='h-4 w-4' />
-      </Button>
-      <span className='mx-1 text-gray-300 select-none'>|</span>
-      {/* 标题 */}
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().setParagraph().run()}
-        className={editor.isActive('paragraph') ? 'bg-muted' : ''}
-      >
-        <Type className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={editor.isActive('heading', { level: 1 }) ? 'bg-muted' : ''}
-      >
-        <Heading1 className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={editor.isActive('heading', { level: 2 }) ? 'bg-muted' : ''}
-      >
-        <Heading2 className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={editor.isActive('heading', { level: 3 }) ? 'bg-muted' : ''}
-      >
-        <Heading3 className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-        className={editor.isActive('heading', { level: 4 }) ? 'bg-muted' : ''}
-      >
-        <Heading4 className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
-        className={editor.isActive('heading', { level: 5 }) ? 'bg-muted' : ''}
-      >
-        <Heading5 className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
-        className={editor.isActive('heading', { level: 6 }) ? 'bg-muted' : ''}
-      >
-        <Heading6 className='h-4 w-4' />
-      </Button>
-      <span className='mx-1 text-gray-300 select-none'>|</span>
-      {/* 列表/引用/分割线 */}
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-      >
-        <Minus className='h-4 w-4' />
-      </Button>
-      <span className='mx-1 text-gray-300 select-none'>|</span>
-      {/* 撤销/重做 */}
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().chain().focus().undo().run()}
-      >
-        <Undo2 className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().chain().focus().redo().run()}
-      >
-        <Redo2 className='h-4 w-4' />
-      </Button>
-      <span className='mx-1 text-gray-300 select-none'>|</span>
-      {/* 其它 */}
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().unsetAllMarks().run()}
-      >
-        <Eraser className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().clearNodes().run()}
-      >
-        <X className='h-4 w-4' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => editor.chain().focus().setColor('#958DF1').run()}
-        className={
-          editor.isActive('textStyle', { color: '#958DF1' }) ? 'bg-muted' : ''
-        }
-      >
-        <Circle className='h-4 w-4' color='#958DF1' fill='#958DF1' />
-      </Button>
-      
+    <div className=" tiptap-editor-wrapper control-group">
+      <div className="button-group">
+        <button
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          disabled={!editorState.canBold}
+          className={editorState.isBold ? "is-active" : ""}
+        >
+          Bold
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          disabled={!editorState.canItalic}
+          className={editorState.isItalic ? "is-active" : ""}
+        >
+          Italic
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          disabled={!editorState.canStrike}
+          className={editorState.isStrike ? "is-active" : ""}
+        >
+          Strike
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          disabled={!editorState.canCode}
+          className={editorState.isCode ? "is-active" : ""}
+        >
+          Code
+        </button>
+        <button onClick={() => editor.chain().focus().unsetAllMarks().run()}>
+          Clear marks
+        </button>
+        <button onClick={() => editor.chain().focus().clearNodes().run()}>
+          Clear nodes
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setParagraph().run()}
+          className={editorState.isParagraph ? "is-active" : ""}
+        >
+          Paragraph
+        </button>
+        <button
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
+          className={editorState.isHeading1 ? "is-active" : ""}
+        >
+          H1
+        </button>
+        <button
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
+          className={editorState.isHeading2 ? "is-active" : ""}
+        >
+          H2
+        </button>
+        <button
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+          className={editorState.isHeading3 ? "is-active" : ""}
+        >
+          H3
+        </button>
+        <button
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 4 }).run()
+          }
+          className={editorState.isHeading4 ? "is-active" : ""}
+        >
+          H4
+        </button>
+        <button
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 5 }).run()
+          }
+          className={editorState.isHeading5 ? "is-active" : ""}
+        >
+          H5
+        </button>
+        <button
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 6 }).run()
+          }
+          className={editorState.isHeading6 ? "is-active" : ""}
+        >
+          H6
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+          className={editorState.isHighlight ? 'is-active' : ''}
+        >
+          Highlight
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className={editorState.isLeft ? 'is-active' : ''}
+        >
+          Left
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={editorState.isCenter ? 'is-active' : ''}
+        >
+          Center
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={editorState.isRight ? 'is-active' : ''}
+        >
+          Right
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+          className={
+            editorState.isJustify ? "is-active" : ""
+          }
+        >
+          Justify
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={editorState.isBulletList ? "is-active" : ""}
+        >
+          Bullet list
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={editorState.isOrderedList ? "is-active" : ""}
+        >
+          Ordered list
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={editorState.isCodeBlock ? "is-active" : ""}
+        >
+          Code block
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          className={editorState.isBlockquote ? "is-active" : ""}
+        >
+          Blockquote
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        >
+          Horizontal rule
+        </button>
+        <button onClick={() => editor.chain().focus().setHardBreak().run()}>
+          Hard break
+        </button>
+        <button
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editorState.canUndo}
+        >
+          Undo
+        </button>
+        <button
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editorState.canRedo}
+        >
+          Redo
+        </button>
+        <button onClick={() => addImage(editor)}>添加图片</button>
+        {/* 此处要实现添加图片的功能，上传到服务器再返回图片的url */}
+      </div>
     </div>
   );
-};
+}

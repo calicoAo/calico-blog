@@ -202,7 +202,7 @@ const Login: React.FC = () => {
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 placeholder="请输入邮箱地址"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all ${
                   errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
                 }`}
                 disabled={isLoading}
@@ -223,7 +223,7 @@ const Login: React.FC = () => {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 placeholder="请输入密码"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all ${
                   errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
                 }`}
                 disabled={isLoading}
@@ -237,7 +237,7 @@ const Login: React.FC = () => {
             <motion.button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              className="w-full py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
               whileHover={{ scale: isLoading ? 1 : 1.02 }}
               whileTap={{ scale: isLoading ? 1 : 0.98 }}
             >
@@ -276,7 +276,7 @@ const Login: React.FC = () => {
             <p>还没有账号？</p>
             <a
               href="/register"
-              className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+              className="text-primary hover:text-primary/80 hover:underline font-medium"
             >
               立即注册
             </a>
@@ -299,12 +299,12 @@ const Login: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800"
+            className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary"
           >
             <p className="font-semibold mb-2">💡 开发提示：</p>
             <p>API地址：{API_BASE_URL}</p>
             <p>如果没有后端服务器，可以使用测试token直接登录（在控制台执行）：</p>
-            <code className="block mt-2 p-2 bg-blue-100 rounded text-xs break-all">
+            <code className="block mt-2 p-2 bg-primary/20 rounded text-xs break-all">
               localStorage.setItem('auth_token', 'test-token-123')
             </code>
           </motion.div>

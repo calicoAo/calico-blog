@@ -118,7 +118,7 @@ const ArticleTOC: React.FC<ArticleTOCProps> = ({ content }) => {
   if (tocItems.length === 0) return null;
 
   return (
-    <aside className="w-64 p-6 bg-linear-to-b from-sky-50 to-blue-50 border-l border-gray-200">
+    <aside className="w-64 p-6 bg-linear-to-b from-sky-50 to-primary/5 border-l border-gray-200">
       <div className="sticky top-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4">目录</h3>
         <nav className="space-y-2">
@@ -129,8 +129,8 @@ const ArticleTOC: React.FC<ArticleTOCProps> = ({ content }) => {
               onClick={(e) => handleClick(e, item.id)}
               className={`block py-2 text-sm transition-all duration-200 cursor-pointer ${
                 activeId === item.id
-                  ? 'text-blue-600 font-semibold border-l-2 border-blue-600 bg-blue-50/50'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+                  ? 'text-primary font-semibold border-l-2 border-primary bg-primary/10'
+                  : 'text-gray-600 hover:text-primary hover:bg-gray-50'
               }`}
               style={{
                 paddingLeft: activeId === item.id 

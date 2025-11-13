@@ -17,10 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 // 连接 MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/calico-blog', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.0.103:27017/calicosBlog')
 .then(() => console.log('MongoDB 连接成功'))
 .catch(err => console.error('MongoDB 连接失败:', err));
 

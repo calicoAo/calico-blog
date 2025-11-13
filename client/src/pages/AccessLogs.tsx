@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import BackToHome from '@/components/ui/BackToHome';
 
 /**
  * 访问记录数据类型
@@ -108,24 +109,19 @@ const AccessLogs: React.FC = () => {
   return (
     <div className="min-h-screen bg-linear-to-tr from-sky-100 via-amber-50 to-slate-100 p-8">
       <div className="max-w-6xl mx-auto">
+        {/* 返回首页按钮 */}
+        <div className="mb-6">
+          <BackToHome />
+        </div>
+
         {/* 页面标题 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">访问记录</h1>
-              <p className="text-gray-600">查看网站访问统计和日志</p>
-            </div>
-            <a
-              href="/"
-              className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
-            >
-              ← 返回首页
-            </a>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">访问记录</h1>
+          <p className="text-gray-600">查看网站访问统计和日志</p>
         </motion.div>
 
         {/* 搜索框 */}
@@ -140,7 +136,7 @@ const AccessLogs: React.FC = () => {
             placeholder="搜索访问记录（路径、IP、浏览器）..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
           />
         </motion.div>
 
@@ -215,7 +211,7 @@ const AccessLogs: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">
                         {log.ip}
                       </td>
-                      <td className="px-6 py-4 text-sm text-blue-600 hover:text-blue-800">
+                      <td className="px-6 py-4 text-sm text-primary hover:text-primary/80">
                         <a href={log.path} className="hover:underline">
                           {log.path}
                         </a>
@@ -226,7 +222,7 @@ const AccessLogs: React.FC = () => {
                             href={log.referer}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline truncate max-w-xs block"
+                            className="text-primary hover:underline truncate max-w-xs block"
                           >
                             {log.referer}
                           </a>

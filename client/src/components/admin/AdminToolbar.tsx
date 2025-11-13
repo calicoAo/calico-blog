@@ -74,7 +74,7 @@ const AdminToolbar: React.FC = () => {
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-blue-600"
+                className="h-5 w-5 text-primary"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -139,7 +139,7 @@ const AdminToolbar: React.FC = () => {
       {/* 切换按钮 */}
       <motion.button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center"
+        className="w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors duration-200 flex items-center justify-center"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="管理菜单"

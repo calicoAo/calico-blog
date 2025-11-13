@@ -45,7 +45,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onArticleClick
 }) => {
   return (
-    <aside className="w-64 bg-linear-to-b from-sky-50 to-blue-50 p-6 border-r border-gray-200">
+    <aside className="w-64 bg-linear-to-b from-sky-50 to-primary/5 p-6 border-r border-gray-200">
       {/* 合集标题 */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-800 mb-2">{categoryName}</h2>
@@ -64,7 +64,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
             }}
             className={`block p-3 rounded-lg transition-all duration-200 ${
               article.id === currentArticleId
-                ? 'bg-blue-100 text-blue-700 font-semibold shadow-sm'
+                ? 'bg-primary/20 text-primary font-semibold shadow-sm'
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
             whileHover={{ x: 4 }}
