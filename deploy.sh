@@ -16,6 +16,10 @@ if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
 
+# 登录到 GitHub Container Registry（如果需要）
+# echo "🔐 登录到 GitHub Container Registry..."
+# echo "$GITHUB_TOKEN" | docker login ghcr.io -u USERNAME --password-stdin
+
 # 拉取最新镜像
 echo "📦 拉取最新 Docker 镜像..."
 docker-compose pull
@@ -74,4 +78,3 @@ docker image prune -f
 echo "✅ 部署完成！"
 echo "📊 服务状态："
 docker-compose ps
-

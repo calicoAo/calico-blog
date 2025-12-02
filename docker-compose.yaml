@@ -28,7 +28,7 @@ services:
       start_period: 40s
 
   server:
-    image: ghcr.io/calicoao/calico-blog-server:latest
+    image: ghcr.io/calicoAo/calico-blog-server:latest
     container_name: calico-server
     restart: always
     ports:
@@ -56,13 +56,13 @@ services:
       start_period: 40s
 
   frontend:
-    image: ghcr.io/calicoao/calico-blog-frontend:latest
+    image: ghcr.io/calicoAo/calico-blog-frontend:latest
     container_name: calico-frontend
     restart: always
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://8.129.88.130:3001}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://www.calicovo.space}
       NEXT_PUBLIC_CRYPTO_SECRET: ${CRYPTO_SECRET}
       NODE_ENV: production
     networks:
