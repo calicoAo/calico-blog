@@ -21,7 +21,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, '密码不能为空'],
-    minlength: [6, '密码至少6个字符']
+    minlength: [6, '密码至少6个字符'],
+    select: false // 默认查询时不返回密码字段，需要使用 select('+password') 显式查询
   },
   avatar: {
     type: String,

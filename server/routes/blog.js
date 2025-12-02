@@ -2,6 +2,7 @@ const express = require('express');
 const Blog = require('../models/Blog');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const { validateBlog, validatePagination } = require('../middleware/validation');
+const { success, error, notFound, forbidden, serverError } = require('../utils/response');
 
 const router = express.Router();
 
@@ -36,21 +37,18 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
 
     const total = await Blog.countDocuments(query);
 
-    res.json({
-      message: '获取博客列表成功',
-      data: {
-        blogs,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
+    return success(res, {
+      blogs,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
-    });
-  } catch (error) {
-    console.error('获取博客列表错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    }, '获取博客列表成功');
+  } catch (err) {
+    console.error('获取博客列表错误:', err);
+    return serverError(res);
   }
 });
 
@@ -63,26 +61,23 @@ router.get('/:id', optionalAuth, async (req, res) => {
       .populate('comments.user', 'username avatar');
 
     if (!blog) {
-      return res.status(404).json({ message: '博客不存在' });
+      return notFound(res, '博客不存在');
     }
 
     // 只有作者或已发布的博客才能查看
     if (blog.status !== 'published' && 
         (!req.user || blog.author._id.toString() !== req.user._id.toString())) {
-      return res.status(403).json({ message: '无权限查看此博客' });
+      return forbidden(res, '无权限查看此博客');
     }
 
     // 增加浏览量
     blog.views += 1;
     await blog.save();
 
-    res.json({
-      message: '获取博客详情成功',
-      data: blog
-    });
-  } catch (error) {
-    console.error('获取博客详情错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, blog, '获取博客详情成功');
+  } catch (err) {
+    console.error('获取博客详情错误:', err);
+    return serverError(res);
   }
 });
 
@@ -98,13 +93,10 @@ router.post('/', authenticateToken, validateBlog, async (req, res) => {
     await blog.save();
     await blog.populate('author', 'username avatar');
 
-    res.status(201).json({
-      message: '博客创建成功',
-      data: blog
-    });
-  } catch (error) {
-    console.error('创建博客错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, blog, '博客创建成功', 201);
+  } catch (err) {
+    console.error('创建博客错误:', err);
+    return serverError(res);
   }
 });
 
@@ -114,25 +106,22 @@ router.put('/:id', authenticateToken, validateBlog, async (req, res) => {
     const blog = await Blog.findById(req.params.id);
 
     if (!blog) {
-      return res.status(404).json({ message: '博客不存在' });
+      return notFound(res, '博客不存在');
     }
 
     // 检查权限
     if (blog.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: '无权限修改此博客' });
+      return forbidden(res, '无权限修改此博客');
     }
 
     Object.assign(blog, req.body);
     await blog.save();
     await blog.populate('author', 'username avatar');
 
-    res.json({
-      message: '博客更新成功',
-      data: blog
-    });
-  } catch (error) {
-    console.error('更新博客错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, blog, '博客更新成功');
+  } catch (err) {
+    console.error('更新博客错误:', err);
+    return serverError(res);
   }
 });
 
@@ -142,20 +131,20 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     const blog = await Blog.findById(req.params.id);
 
     if (!blog) {
-      return res.status(404).json({ message: '博客不存在' });
+      return notFound(res, '博客不存在');
     }
 
     // 检查权限
     if (blog.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: '无权限删除此博客' });
+      return forbidden(res, '无权限删除此博客');
     }
 
     await Blog.findByIdAndDelete(req.params.id);
 
-    res.json({ message: '博客删除成功' });
-  } catch (error) {
-    console.error('删除博客错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, null, '博客删除成功');
+  } catch (err) {
+    console.error('删除博客错误:', err);
+    return serverError(res);
   }
 });
 
@@ -165,7 +154,7 @@ router.post('/:id/like', authenticateToken, async (req, res) => {
     const blog = await Blog.findById(req.params.id);
 
     if (!blog) {
-      return res.status(404).json({ message: '博客不存在' });
+      return notFound(res, '博客不存在');
     }
 
     const userId = req.user._id;
@@ -175,16 +164,16 @@ router.post('/:id/like', authenticateToken, async (req, res) => {
       // 取消点赞
       blog.likes.splice(likeIndex, 1);
       await blog.save();
-      res.json({ message: '取消点赞成功', liked: false });
+      return success(res, { liked: false }, '取消点赞成功');
     } else {
       // 点赞
       blog.likes.push(userId);
       await blog.save();
-      res.json({ message: '点赞成功', liked: true });
+      return success(res, { liked: true }, '点赞成功');
     }
-  } catch (error) {
-    console.error('点赞操作错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+  } catch (err) {
+    console.error('点赞操作错误:', err);
+    return serverError(res);
   }
 });
 
@@ -194,17 +183,17 @@ router.post('/:id/comments', authenticateToken, async (req, res) => {
     const { content } = req.body;
 
     if (!content || content.trim().length === 0) {
-      return res.status(400).json({ message: '评论内容不能为空' });
+      return error(res, '评论内容不能为空', 400);
     }
 
     if (content.length > 500) {
-      return res.status(400).json({ message: '评论最多500个字符' });
+      return error(res, '评论最多500个字符', 400);
     }
 
     const blog = await Blog.findById(req.params.id);
 
     if (!blog) {
-      return res.status(404).json({ message: '博客不存在' });
+      return notFound(res, '博客不存在');
     }
 
     const comment = {
@@ -218,13 +207,10 @@ router.post('/:id/comments', authenticateToken, async (req, res) => {
 
     const newComment = blog.comments[blog.comments.length - 1];
 
-    res.status(201).json({
-      message: '评论添加成功',
-      data: newComment
-    });
-  } catch (error) {
-    console.error('添加评论错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, newComment, '评论添加成功', 201);
+  } catch (err) {
+    console.error('添加评论错误:', err);
+    return serverError(res);
   }
 });
 
@@ -245,17 +231,14 @@ router.get('/stats/overview', async (req, res) => {
       { $limit: 10 }
     ]);
 
-    res.json({
-      message: '获取统计信息成功',
-      data: {
-        totalBlogs,
-        totalViews: totalViews[0]?.total || 0,
-        popularTags
-      }
-    });
-  } catch (error) {
-    console.error('获取统计信息错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, {
+      totalBlogs,
+      totalViews: totalViews[0]?.total || 0,
+      popularTags
+    }, '获取统计信息成功');
+  } catch (err) {
+    console.error('获取统计信息错误:', err);
+    return serverError(res);
   }
 });
 

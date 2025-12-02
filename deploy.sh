@@ -1,0 +1,77 @@
+#!/bin/bash
+set -e
+
+echo "🚀 开始部署 Calico Blog..."
+
+# 项目目录
+PROJECT_DIR="/opt/calico-blog"
+cd $PROJECT_DIR
+
+# 拉取最新代码
+echo "📥 拉取最新代码..."
+git pull origin main || git pull origin master
+
+# 加载环境变量
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
+# 拉取最新镜像
+echo "📦 拉取最新 Docker 镜像..."
+docker-compose pull
+
+# 停止旧容器
+echo "🛑 停止旧容器..."
+docker-compose down
+
+# 备份数据库（可选）
+if [ "$1" == "--backup" ]; then
+    echo "💾 备份数据库..."
+    ./scripts/backup-mongo.sh
+fi
+
+# 启动新容器
+echo "▶️  启动新容器..."
+docker-compose up -d
+
+# 等待服务就绪
+echo "⏳ 等待服务就绪..."
+sleep 10
+
+# 健康检查
+echo "🏥 执行健康检查..."
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if curl -f http://localhost:3001/api/health > /dev/null 2>&1; then
+        echo "✅ 服务器健康检查通过"
+        break
+    fi
+    
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    echo "⏳ 等待服务器启动... ($RETRY_COUNT/$MAX_RETRIES)"
+    sleep 2
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "❌ 服务器健康检查失败"
+    docker-compose logs server
+    exit 1
+fi
+
+# 初始化数据库（如果是首次部署）
+if [ ! -f .db-initialized ]; then
+    echo "🗄️  初始化数据库..."
+    docker-compose exec -T server npm run init-db || true
+    touch .db-initialized
+fi
+
+# 清理旧镜像
+echo "🧹 清理旧镜像..."
+docker image prune -f
+
+echo "✅ 部署完成！"
+echo "📊 服务状态："
+docker-compose ps
+

@@ -1,3 +1,5 @@
+const { validationError } = require('../utils/response');
+
 // 验证中间件
 const validateEmail = (email) => {
   const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
@@ -30,7 +32,7 @@ const validateRegister = (req, res, next) => {
   }
 
   if (errors.length > 0) {
-    return res.status(400).json({ message: '验证失败', errors });
+    return validationError(res, '验证失败', errors);
   }
 
   next();
@@ -38,19 +40,25 @@ const validateRegister = (req, res, next) => {
 
 // 用户登录验证
 const validateLogin = (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, encryptedPassword, transkey } = req.body;
   const errors = [];
 
   if (!email) {
     errors.push('邮箱不能为空');
   }
 
-  if (!password) {
+  // 接受加密密码或普通密码（向后兼容）
+  // 如果使用 transkey，必须同时提供 encryptedPassword 和 transkey
+  if (transkey && !encryptedPassword) {
+    errors.push('使用临时密钥时必须提供加密密码');
+  }
+  
+  if (!password && !encryptedPassword) {
     errors.push('密码不能为空');
   }
 
   if (errors.length > 0) {
-    return res.status(400).json({ message: '验证失败', errors });
+    return validationError(res, '验证失败', errors);
   }
 
   next();
@@ -72,7 +80,7 @@ const validateBlog = (req, res, next) => {
   }
 
   if (errors.length > 0) {
-    return res.status(400).json({ message: '验证失败', errors });
+    return validationError(res, '验证失败', errors);
   }
 
   next();
@@ -84,11 +92,11 @@ const validatePagination = (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
 
   if (page < 1) {
-    return res.status(400).json({ message: '页码必须大于0' });
+    return validationError(res, '页码必须大于0');
   }
 
   if (limit < 1 || limit > 100) {
-    return res.status(400).json({ message: '每页数量必须在1-100之间' });
+    return validationError(res, '每页数量必须在1-100之间');
   }
 
   req.pagination = { page, limit };

@@ -92,6 +92,21 @@ async function createDefaultAdmin() {
         await existingAdmin.save();
         console.log('  ✓ 已更新用户角色为管理员');
       }
+      
+      // 如果设置了 RESET_PASSWORD 环境变量，强制重置密码
+      if (process.env.RESET_PASSWORD === 'true') {
+        console.log('  🔄 强制重置密码模式已启用');
+        const hashedPassword = await bcrypt.hash(
+          adminPassword, 
+          parseInt(process.env.BCRYPT_ROUNDS) || 12
+        );
+        await User.updateOne(
+          { _id: existingAdmin._id },
+          { $set: { password: hashedPassword } }
+        );
+        console.log('  ✓ 密码已重置');
+        console.log(`    新密码: ${adminPassword}`);
+      }
       return;
     }
     

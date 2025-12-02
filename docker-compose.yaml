@@ -1,0 +1,79 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: calico-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-calicosBlog}
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - calico-network
+    command: 
+      - --auth
+      - --bind_ip_all
+      - --wiredTigerCacheSizeGB=1
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  server:
+    image: ghcr.io/calicoao/calico-blog-server:latest
+    container_name: calico-server
+    restart: always
+    ports:
+      - "${SERVER_PORT:-3001}:3001"
+    environment:
+      MONGODB_URI: mongodb://${MONGO_APP_USERNAME:-calico_user}:${MONGO_APP_PASSWORD}@mongo:27017/${MONGO_DATABASE:-calicosBlog}?authSource=${MONGO_DATABASE:-calicosBlog}
+      PORT: 3001
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      CRYPTO_SECRET: ${CRYPTO_SECRET}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+    networks:
+      - calico-network
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: ghcr.io/calicoao/calico-blog-frontend:latest
+    container_name: calico-frontend
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://8.129.88.130:3001}
+      NEXT_PUBLIC_CRYPTO_SECRET: ${CRYPTO_SECRET}
+      NODE_ENV: production
+    networks:
+      - calico-network
+    depends_on:
+      - server
+
+networks:
+  calico-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local

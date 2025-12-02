@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Blog = require('../models/Blog');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { validatePagination } = require('../middleware/validation');
+const { success, error, notFound, forbidden, serverError, validationError } = require('../utils/response');
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.get('/profile/:id', async (req, res) => {
     const user = await User.findById(req.params.id).select('-password');
     
     if (!user) {
-      return res.status(404).json({ message: '用户不存在' });
+      return notFound(res, '用户不存在');
     }
 
     // 获取用户的博客统计
@@ -37,16 +38,13 @@ router.get('/profile/:id', async (req, res) => {
       stats.totalViews += stat.totalViews;
     });
 
-    res.json({
-      message: '获取用户资料成功',
-      data: {
-        user,
-        stats
-      }
-    });
-  } catch (error) {
-    console.error('获取用户资料错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, {
+      user,
+      stats
+    }, '获取用户资料成功');
+  } catch (err) {
+    console.error('获取用户资料错误:', err);
+    return serverError(res);
   }
 });
 
@@ -64,7 +62,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
       });
       
       if (existingUser) {
-        return res.status(400).json({ message: '用户名已被使用' });
+        return validationError(res, '用户名已被使用');
       }
       
       updates.username = username;
@@ -84,13 +82,10 @@ router.put('/profile', authenticateToken, async (req, res) => {
       { new: true, runValidators: true }
     ).select('-password');
 
-    res.json({
-      message: '用户资料更新成功',
-      data: user
-    });
-  } catch (error) {
-    console.error('更新用户资料错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, user, '用户资料更新成功');
+  } catch (err) {
+    console.error('更新用户资料错误:', err);
+    return serverError(res);
   }
 });
 
@@ -122,21 +117,18 @@ router.get('/:id/blogs', validatePagination, async (req, res) => {
 
     const total = await Blog.countDocuments(query);
 
-    res.json({
-      message: '获取用户博客列表成功',
-      data: {
-        blogs,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
+    return success(res, {
+      blogs,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
-    });
-  } catch (error) {
-    console.error('获取用户博客列表错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    }, '获取用户博客列表成功');
+  } catch (err) {
+    console.error('获取用户博客列表错误:', err);
+    return serverError(res);
   }
 });
 
@@ -168,21 +160,18 @@ router.get('/', authenticateToken, requireAdmin, validatePagination, async (req,
 
     const total = await User.countDocuments(query);
 
-    res.json({
-      message: '获取用户列表成功',
-      data: {
-        users,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
+    return success(res, {
+      users,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
-    });
-  } catch (error) {
-    console.error('获取用户列表错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    }, '获取用户列表成功');
+  } catch (err) {
+    console.error('获取用户列表错误:', err);
+    return serverError(res);
   }
 });
 
@@ -194,7 +183,7 @@ router.put('/:id/status', authenticateToken, requireAdmin, async (req, res) => {
 
     // 不能修改自己的状态
     if (userId === req.user._id.toString()) {
-      return res.status(400).json({ message: '不能修改自己的账户状态' });
+      return validationError(res, '不能修改自己的账户状态');
     }
 
     const user = await User.findByIdAndUpdate(
@@ -204,16 +193,13 @@ router.put('/:id/status', authenticateToken, requireAdmin, async (req, res) => {
     ).select('-password');
 
     if (!user) {
-      return res.status(404).json({ message: '用户不存在' });
+      return notFound(res, '用户不存在');
     }
 
-    res.json({
-      message: `用户${isActive ? '启用' : '禁用'}成功`,
-      data: user
-    });
-  } catch (error) {
-    console.error('更新用户状态错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, user, `用户${isActive ? '启用' : '禁用'}成功`);
+  } catch (err) {
+    console.error('更新用户状态错误:', err);
+    return serverError(res);
   }
 });
 
@@ -224,12 +210,12 @@ router.put('/:id/role', authenticateToken, requireAdmin, async (req, res) => {
     const userId = req.params.id;
 
     if (!['user', 'admin'].includes(role)) {
-      return res.status(400).json({ message: '无效的用户角色' });
+      return validationError(res, '无效的用户角色');
     }
 
     // 不能修改自己的角色
     if (userId === req.user._id.toString()) {
-      return res.status(400).json({ message: '不能修改自己的角色' });
+      return validationError(res, '不能修改自己的角色');
     }
 
     const user = await User.findByIdAndUpdate(
@@ -239,16 +225,13 @@ router.put('/:id/role', authenticateToken, requireAdmin, async (req, res) => {
     ).select('-password');
 
     if (!user) {
-      return res.status(404).json({ message: '用户不存在' });
+      return notFound(res, '用户不存在');
     }
 
-    res.json({
-      message: '用户角色更新成功',
-      data: user
-    });
-  } catch (error) {
-    console.error('更新用户角色错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, user, '用户角色更新成功');
+  } catch (err) {
+    console.error('更新用户角色错误:', err);
+    return serverError(res);
   }
 });
 
@@ -259,22 +242,22 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
 
     // 不能删除自己
     if (userId === req.user._id.toString()) {
-      return res.status(400).json({ message: '不能删除自己的账户' });
+      return validationError(res, '不能删除自己的账户');
     }
 
     const user = await User.findByIdAndDelete(userId);
 
     if (!user) {
-      return res.status(404).json({ message: '用户不存在' });
+      return notFound(res, '用户不存在');
     }
 
     // 删除用户的所有博客
     await Blog.deleteMany({ author: userId });
 
-    res.json({ message: '用户删除成功' });
-  } catch (error) {
-    console.error('删除用户错误:', error);
-    res.status(500).json({ message: '服务器内部错误' });
+    return success(res, null, '用户删除成功');
+  } catch (err) {
+    console.error('删除用户错误:', err);
+    return serverError(res);
   }
 });
 
