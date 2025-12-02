@@ -26,11 +26,11 @@ jobs:
           - name: server
             context: ./server
             dockerfile: dockerfile
-            image: ${{ env.SERVER_IMAGE_NAME }}
+            image: calico-blog-server
           - name: frontend
             context: ./client-next
             dockerfile: Dockerfile
-            image: ${{ env.FRONTEND_IMAGE_NAME }}
+            image: calico-blog-frontend
 
     steps:
       - name: Checkout code
@@ -91,14 +91,4 @@ jobs:
           file: ${{ matrix.service.context }}/${{ matrix.service.dockerfile }}
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
-          build-args: |
-            NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
-            NEXT_PUBLIC_CRYPTO_SECRET=${{ secrets.CRYPTO_SECRET }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/he
+          labels: ${{ steps.meta-frontend.outpu
