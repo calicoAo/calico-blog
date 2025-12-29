@@ -119,4 +119,5 @@ jobs:
             git config --global --add safe.directory /opt/calico-blog
             git stash || true
             git pull origin main || git pull origin master
+            chmod +x deploy.sh
             ./deploy.sh
