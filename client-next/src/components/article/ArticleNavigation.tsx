@@ -17,16 +17,16 @@ import { motion } from 'framer-motion';
 interface ArticleNavigationProps {
   /** 上一篇文章 */
   previousArticle?: {
-    id: number;
+    id: string;  // 改为 string
     title: string;
   } | null;
   /** 下一篇文章 */
   nextArticle?: {
-    id: number;
+    id: string;  // 改为 string
     title: string;
   } | null;
   /** 导航回调 */
-  onNavigate: (articleId: number) => void;
+  onNavigate: (articleId: string) => void;  // 改为 string
 }
 
 /**
@@ -75,4 +75,3 @@ const ArticleNavigation: React.FC<ArticleNavigationProps> = ({
 };
 
 export default ArticleNavigation;
-
