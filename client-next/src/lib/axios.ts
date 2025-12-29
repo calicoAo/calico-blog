@@ -187,8 +187,8 @@ axiosInstance.interceptors.response.use(
         }
       }
       
-      // 提取错误消息（优先使用 msg，兼容 message）
-      const errorMsg = data?.msg || data?.message || '请求失败';
+      // 提取错误消息
+      const errorMsg = data?.msg || '请求失败';
       
       // 403 禁止访问
       if (status === 403) {
