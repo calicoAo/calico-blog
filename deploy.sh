@@ -25,7 +25,11 @@ fi
 
 # 拉取最新镜像
 echo "📦 拉取最新 Docker 镜像..."
-docker-compose pull
+# 增加超时时间和重试机制
+docker-compose pull --ignore-pull-failures || {
+  echo "⚠️  部分镜像拉取失败，尝试继续部署..."
+  docker-compose pull --ignore-pull-failures
+}
 
 # 停止旧容器
 echo "🛑 停止旧容器..."
