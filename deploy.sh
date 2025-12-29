@@ -7,6 +7,9 @@ echo "🚀 开始部署 Calico Blog..."
 PROJECT_DIR="/opt/calico-blog"
 cd $PROJECT_DIR
 
+# 配置 Git 安全目录（解决所有权检测问题）
+git config --global --add safe.directory $PROJECT_DIR || true
+
 # 拉取最新代码
 echo "📥 拉取最新代码..."
 git pull origin main || git pull origin master
