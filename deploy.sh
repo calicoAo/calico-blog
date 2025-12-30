@@ -32,6 +32,24 @@ docker-compose pull --ignore-pull-failures || echo "⚠️  部分镜像拉取�
 echo "🛑 停止旧容器..."
 docker-compose down
 
+# 检查并拉取必需的镜像
+echo "🔍 检查必需镜像..."
+if ! docker images | grep -q "mongo:7.0"; then
+  echo "📥 MongoDB 镜像不存在，尝试拉取..."
+  docker pull mongo:7.0 || {
+    echo "⚠️  MongoDB 镜像拉取失败，尝试使用镜像加速器..."
+    # 如果直接拉取失败，尝试重启 Docker 服务以应用镜像加速器配置
+    sudo systemctl restart docker 2>/dev/null || true
+    sleep 2
+    docker pull mongo:7.0 || {
+      echo "❌ MongoDB 镜像拉取失败，请检查网络连接或手动拉取"
+      echo "   手动执行: docker pull mongo:7.0"
+      exit 1
+    }
+  }
+  echo "✅ MongoDB 镜像拉取成功"
+fi
+
 # 备份数据库（可选）
 if [ "$1" == "--backup" ]; then
     echo "💾 备份数据库..."
@@ -40,16 +58,8 @@ fi
 
 # 启动新容器
 echo "▶️  启动新容器..."
-# docker-compose up 会自动使用本地已有镜像，即使拉取失败也能启动
 docker-compose up -d || {
-  echo "⚠️  容器启动失败，检查是否缺少镜像..."
-  # 检查关键镜像是否存在
-  if ! docker images | grep -q "mongo:7.0"; then
-    echo "❌ MongoDB 镜像不存在，请配置 Docker 镜像加速器或手动拉取"
-    echo "   执行: docker pull mongo:7.0"
-    exit 1
-  fi
-  echo "⚠️  镜像存在但启动失败，查看日志..."
+  echo "⚠️  容器启动失败，查看日志..."
   docker-compose logs
   exit 1
 }
