@@ -37,18 +37,19 @@ echo "🔍 检查必需镜像..."
 if ! docker images | grep -q "mongo:7.0"; then
   echo "📥 MongoDB 镜像不存在，尝试从多个源拉取..."
   
-  # 尝试从国内镜像源拉取
+  # 尝试从国内镜像源拉取（使用正确的镜像源格式）
   MIRRORS=(
+    "registry.cn-hangzhou.aliyuncs.com/library/mongo:7.0"
     "docker.mirrors.ustc.edu.cn/library/mongo:7.0"
     "hub-mirror.c.163.com/library/mongo:7.0"
-    "mirror.baidubce.com/library/mongo:7.0"
     "mongo:7.0"
   )
   
   PULLED=false
   for mirror in "${MIRRORS[@]}"; do
     echo "尝试从 $mirror 拉取..."
-    if docker pull "$mirror" 2>/dev/null; then
+    # 设置超时时间为 60 秒
+    if timeout 60 docker pull "$mirror" 2>&1 | tee /tmp/docker_pull.log; then
       # 如果从镜像源拉取成功，需要打标签
       if [[ "$mirror" != "mongo:7.0" ]]; then
         docker tag "$mirror" mongo:7.0
@@ -58,14 +59,19 @@ if ! docker images | grep -q "mongo:7.0"; then
       fi
       PULLED=true
       break
+    else
+      echo "⚠️  从 $mirror 拉取失败，尝试下一个源..."
     fi
   done
   
   if [ "$PULLED" = false ]; then
     echo "❌ MongoDB 镜像拉取失败，所有镜像源都无法访问"
-    echo "   请手动执行以下命令之一："
-    echo "   docker pull docker.mirrors.ustc.edu.cn/library/mongo:7.0 && docker tag docker.mirrors.ustc.edu.cn/library/mongo:7.0 mongo:7.0"
-    echo "   或: docker pull mongo:7.0"
+    echo "   这可能是网络问题，请："
+    echo "   1. 检查服务器网络连接"
+    echo "   2. 手动在服务器上执行："
+    echo "      docker pull registry.cn-hangzhou.aliyuncs.com/library/mongo:7.0"
+    echo "      docker tag registry.cn-hangzhou.aliyuncs.com/library/mongo:7.0 mongo:7.0"
+    echo "   3. 或者等待网络恢复后重新部署"
     exit 1
   fi
 fi
