@@ -25,11 +25,8 @@ fi
 
 # 拉取最新镜像
 echo "📦 拉取最新 Docker 镜像..."
-# 增加超时时间和重试机制
-docker-compose pull --ignore-pull-failures || {
-  echo "⚠️  部分镜像拉取失败，尝试继续部署..."
-  docker-compose pull --ignore-pull-failures
-}
+# 使用 --ignore-pull-failures 忽略拉取失败，使用本地已有镜像
+docker-compose pull --ignore-pull-failures || echo "⚠️  部分镜像拉取失败，将使用本地已有镜像..."
 
 # 停止旧容器
 echo "🛑 停止旧容器..."
@@ -43,7 +40,19 @@ fi
 
 # 启动新容器
 echo "▶️  启动新容器..."
-docker-compose up -d
+# docker-compose up 会自动使用本地已有镜像，即使拉取失败也能启动
+docker-compose up -d || {
+  echo "⚠️  容器启动失败，检查是否缺少镜像..."
+  # 检查关键镜像是否存在
+  if ! docker images | grep -q "mongo:7.0"; then
+    echo "❌ MongoDB 镜像不存在，请配置 Docker 镜像加速器或手动拉取"
+    echo "   执行: docker pull mongo:7.0"
+    exit 1
+  fi
+  echo "⚠️  镜像存在但启动失败，查看日志..."
+  docker-compose logs
+  exit 1
+}
 
 # 等待服务就绪
 echo "⏳ 等待服务就绪..."
