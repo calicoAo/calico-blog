@@ -35,47 +35,42 @@ docker-compose down
 # 检查并拉取必需的镜像
 echo "🔍 检查必需镜像..."
 if ! docker images | grep -q "mongo:7.0"; then
-  echo "📥 MongoDB 镜像不存在，尝试从多个源拉取..."
+  echo "📥 MongoDB 镜像不存在，尝试拉取..."
+  echo "   注意：如果已配置 Docker 镜像加速器，将自动使用加速器拉取"
   
-  # 尝试从国内镜像源拉取（使用正确的镜像源格式）
-  # 注意：不同镜像源的路径格式可能不同
-  MIRRORS=(
-    "docker.mirrors.tuna.tsinghua.edu.cn/library/mongo:7.0"
-    "docker.mirrors.ustc.edu.cn/library/mongo:7.0"
-    "hub-mirror.c.163.com/library/mongo:7.0"
-    "mongo:7.0"
-  )
-  
+  # 使用配置好的镜像加速器拉取（如果已配置，会自动使用）
+  # 增加重试机制
+  MAX_RETRIES=3
+  RETRY_COUNT=0
   PULLED=false
-  for mirror in "${MIRRORS[@]}"; do
-    echo "尝试从 $mirror 拉取..."
-    # 设置超时时间为 60 秒
-    if timeout 60 docker pull "$mirror" 2>&1 | tee /tmp/docker_pull.log; then
-      # 如果从镜像源拉取成功，需要打标签
-      if [[ "$mirror" != "mongo:7.0" ]]; then
-        docker tag "$mirror" mongo:7.0
-        echo "✅ 已从 $mirror 拉取并标记为 mongo:7.0"
-      else
-        echo "✅ 已从 Docker Hub 拉取 mongo:7.0"
-      fi
+  
+  while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$PULLED" = false ]; do
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    echo "尝试拉取 mongo:7.0 (第 $RETRY_COUNT/$MAX_RETRIES 次)..."
+    
+    # 设置超时时间为 120 秒，增加超时时间
+    if timeout 120 docker pull mongo:7.0 2>&1; then
+      echo "✅ MongoDB 镜像拉取成功"
       PULLED=true
       break
     else
-      echo "⚠️  从 $mirror 拉取失败，尝试下一个源..."
+      if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+        echo "⚠️  拉取失败，等待 5 秒后重试..."
+        sleep 5
+      fi
     fi
   done
   
   if [ "$PULLED" = false ]; then
-    echo "❌ MongoDB 镜像拉取失败，所有镜像源都无法访问"
+    echo "❌ MongoDB 镜像拉取失败（已重试 $MAX_RETRIES 次）"
     echo "   这可能是网络问题，请："
-    echo "   1. 检查服务器网络连接和防火墙设置"
-    echo "   2. 手动在服务器上执行以下命令之一："
-    echo "      docker pull docker.mirrors.tuna.tsinghua.edu.cn/library/mongo:7.0"
-    echo "      docker tag docker.mirrors.tuna.tsinghua.edu.cn/library/mongo:7.0 mongo:7.0"
-    echo "   或:"
-    echo "      docker pull docker.mirrors.ustc.edu.cn/library/mongo:7.0"
-    echo "      docker tag docker.mirrors.ustc.edu.cn/library/mongo:7.0 mongo:7.0"
-    echo "   3. 或者等待网络恢复后重新部署"
+    echo "   1. 检查服务器网络连接"
+    echo "   2. 确认 Docker 镜像加速器配置正确："
+    echo "      cat /etc/docker/daemon.json"
+    echo "   3. 重启 Docker 服务以应用镜像加速器配置："
+    echo "      sudo systemctl restart docker"
+    echo "   4. 手动拉取镜像："
+    echo "      docker pull mongo:7.0"
     echo ""
     echo "   如果 MongoDB 容器已经在运行，可以跳过此步骤继续部署"
     # 检查是否有运行中的 mongo 容器
