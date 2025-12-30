@@ -35,19 +35,39 @@ docker-compose down
 # 检查并拉取必需的镜像
 echo "🔍 检查必需镜像..."
 if ! docker images | grep -q "mongo:7.0"; then
-  echo "📥 MongoDB 镜像不存在，尝试拉取..."
-  docker pull mongo:7.0 || {
-    echo "⚠️  MongoDB 镜像拉取失败，尝试使用镜像加速器..."
-    # 如果直接拉取失败，尝试重启 Docker 服务以应用镜像加速器配置
-    sudo systemctl restart docker 2>/dev/null || true
-    sleep 2
-    docker pull mongo:7.0 || {
-      echo "❌ MongoDB 镜像拉取失败，请检查网络连接或手动拉取"
-      echo "   手动执行: docker pull mongo:7.0"
-      exit 1
-    }
-  }
-  echo "✅ MongoDB 镜像拉取成功"
+  echo "📥 MongoDB 镜像不存在，尝试从多个源拉取..."
+  
+  # 尝试从国内镜像源拉取
+  MIRRORS=(
+    "docker.mirrors.ustc.edu.cn/library/mongo:7.0"
+    "hub-mirror.c.163.com/library/mongo:7.0"
+    "mirror.baidubce.com/library/mongo:7.0"
+    "mongo:7.0"
+  )
+  
+  PULLED=false
+  for mirror in "${MIRRORS[@]}"; do
+    echo "尝试从 $mirror 拉取..."
+    if docker pull "$mirror" 2>/dev/null; then
+      # 如果从镜像源拉取成功，需要打标签
+      if [[ "$mirror" != "mongo:7.0" ]]; then
+        docker tag "$mirror" mongo:7.0
+        echo "✅ 已从 $mirror 拉取并标记为 mongo:7.0"
+      else
+        echo "✅ 已从 Docker Hub 拉取 mongo:7.0"
+      fi
+      PULLED=true
+      break
+    fi
+  done
+  
+  if [ "$PULLED" = false ]; then
+    echo "❌ MongoDB 镜像拉取失败，所有镜像源都无法访问"
+    echo "   请手动执行以下命令之一："
+    echo "   docker pull docker.mirrors.ustc.edu.cn/library/mongo:7.0 && docker tag docker.mirrors.ustc.edu.cn/library/mongo:7.0 mongo:7.0"
+    echo "   或: docker pull mongo:7.0"
+    exit 1
+  fi
 fi
 
 # 备份数据库（可选）
