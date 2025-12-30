@@ -38,8 +38,9 @@ if ! docker images | grep -q "mongo:7.0"; then
   echo "📥 MongoDB 镜像不存在，尝试从多个源拉取..."
   
   # 尝试从国内镜像源拉取（使用正确的镜像源格式）
+  # 注意：不同镜像源的路径格式可能不同
   MIRRORS=(
-    "registry.cn-hangzhou.aliyuncs.com/library/mongo:7.0"
+    "docker.mirrors.tuna.tsinghua.edu.cn/library/mongo:7.0"
     "docker.mirrors.ustc.edu.cn/library/mongo:7.0"
     "hub-mirror.c.163.com/library/mongo:7.0"
     "mongo:7.0"
@@ -67,12 +68,23 @@ if ! docker images | grep -q "mongo:7.0"; then
   if [ "$PULLED" = false ]; then
     echo "❌ MongoDB 镜像拉取失败，所有镜像源都无法访问"
     echo "   这可能是网络问题，请："
-    echo "   1. 检查服务器网络连接"
-    echo "   2. 手动在服务器上执行："
-    echo "      docker pull registry.cn-hangzhou.aliyuncs.com/library/mongo:7.0"
-    echo "      docker tag registry.cn-hangzhou.aliyuncs.com/library/mongo:7.0 mongo:7.0"
+    echo "   1. 检查服务器网络连接和防火墙设置"
+    echo "   2. 手动在服务器上执行以下命令之一："
+    echo "      docker pull docker.mirrors.tuna.tsinghua.edu.cn/library/mongo:7.0"
+    echo "      docker tag docker.mirrors.tuna.tsinghua.edu.cn/library/mongo:7.0 mongo:7.0"
+    echo "   或:"
+    echo "      docker pull docker.mirrors.ustc.edu.cn/library/mongo:7.0"
+    echo "      docker tag docker.mirrors.ustc.edu.cn/library/mongo:7.0 mongo:7.0"
     echo "   3. 或者等待网络恢复后重新部署"
-    exit 1
+    echo ""
+    echo "   如果 MongoDB 容器已经在运行，可以跳过此步骤继续部署"
+    # 检查是否有运行中的 mongo 容器
+    if docker ps -a | grep -q "calico-mongo"; then
+      echo "⚠️  检测到已有 MongoDB 容器，尝试使用现有容器继续部署..."
+      # 不退出，继续执行
+    else
+      exit 1
+    fi
   fi
 fi
 
