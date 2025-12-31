@@ -33,7 +33,14 @@ export interface ApiResponse<T = unknown> {
 const getBaseURL = () => {
   // 客户端环境
   if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+    const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+    // 如果是绝对 URL，确保以 /api 结尾；如果是相对路径，直接返回
+    if (baseURL.startsWith('http')) {
+      // 绝对 URL，确保以 /api 结尾
+      return baseURL.endsWith('/api') ? baseURL : `${baseURL.replace(/\/$/, '')}/api`;
+    }
+    // 相对路径，直接返回（应该已经是 /api）
+    return baseURL;
   }
   // 服务端环境
   return process.env.API_BASE_URL || 'http://127.0.0.1:3001/api';
