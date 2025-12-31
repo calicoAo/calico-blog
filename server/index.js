@@ -111,21 +111,83 @@ app.use('/api', (req, res, next) => {
 // ============================================
 // 数据库连接
 // ============================================
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.0.103:27017/calicosBlog', {
-  // 连接超时设置
-  serverSelectionTimeoutMS: 30000, // 30 秒内选择服务器
-  socketTimeoutMS: 45000, // 45 秒 socket 超时
-  connectTimeoutMS: 30000, // 30 秒连接超时
-  // Mongoose 缓冲设置
-  bufferTimeoutMS: 30000, // 30 秒缓冲超时（默认 10 秒）
-  bufferCommands: true, // 启用命令缓冲
-  // 其他选项
-  maxPoolSize: 10, // 最大连接池大小
-  minPoolSize: 2, // 最小连接池大小
-  maxIdleTimeMS: 30000, // 30 秒空闲超时
-})
-  .then(() => console.log('✅ MongoDB 连接成功'))
-  .catch(err => console.error('❌ MongoDB 连接失败:', err));
+const connectMongoDB = async () => {
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://192.168.0.103:27017/calicosBlog';
+  
+  try {
+    await mongoose.connect(mongoUri, {
+      // 连接超时设置
+      serverSelectionTimeoutMS: 30000, // 30 秒内选择服务器
+      socketTimeoutMS: 45000, // 45 秒 socket 超时
+      connectTimeoutMS: 30000, // 30 秒连接超时
+      // Mongoose 缓冲设置
+      bufferTimeoutMS: 30000, // 30 秒缓冲超时（默认 10 秒）
+      bufferCommands: false, // 禁用命令缓冲，立即失败而不是等待
+      // 其他选项
+      maxPoolSize: 10, // 最大连接池大小
+      minPoolSize: 2, // 最小连接池大小
+      maxIdleTimeMS: 30000, // 30 秒空闲超时
+      // 重试配置
+      retryWrites: true,
+      retryReads: true,
+    });
+    console.log('✅ MongoDB 连接成功');
+  } catch (err) {
+    console.error('❌ MongoDB 连接失败:', err);
+    // 不退出进程，让应用继续运行，但会在操作时失败
+  }
+};
+
+// 连接 MongoDB
+connectMongoDB();
+
+// 监听连接事件
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB 已连接');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB 连接错误:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️  MongoDB 连接断开，尝试重新连接...');
+  // 5 秒后尝试重新连接
+  setTimeout(() => {
+    connectMongoDB();
+  }, 5000);
+});
+
+// 优雅关闭
+process.on('SIGINT', async () => {
+  await mongoose.connection.close();
+  console.log('MongoDB 连接已关闭');
+  process.exit(0);
+});
+
+// ============================================
+// 数据库连接状态检查中间件
+// ============================================
+// 检查 MongoDB 连接状态，如果未连接则返回错误
+app.use('/api', (req, res, next) => {
+  // 健康检查接口不需要数据库连接
+  if (req.path === '/health') {
+    return next();
+  }
+  
+  // 检查连接状态
+  if (mongoose.connection.readyState !== 1) {
+    console.error('⚠️  MongoDB 未连接，当前状态:', mongoose.connection.readyState);
+    console.error('  0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting');
+    return res.status(503).json({
+      code: 503,
+      msg: '数据库连接不可用，请稍后重试',
+      data: null
+    });
+  }
+  
+  next();
+});
 
 // ============================================
 // 路由配置（必须在所有中间件之后）
