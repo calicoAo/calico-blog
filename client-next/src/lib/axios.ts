@@ -51,7 +51,7 @@ const getBaseURL = () => {
  */
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000, // 增加到 30 秒，登录接口可能需要更长时间（密码解密、数据库查询等）
   headers: {
     'Content-Type': 'application/json'
   }
@@ -216,6 +216,11 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(new Error(errorMsg));
     } else if (error.request) {
       // 请求已发出但没有收到响应
+      // 可能是超时、网络问题或服务器无响应
+      const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
+      if (isTimeout) {
+        return Promise.reject(new Error('请求超时，请稍后重试'));
+      }
       return Promise.reject(new Error('网络错误，请检查网络连接'));
     } else {
       // 请求配置错误
