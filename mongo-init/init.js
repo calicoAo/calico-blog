@@ -1,24 +1,10 @@
 // MongoDB 初始化脚本
 // 此脚本在 MongoDB 容器首次启动时自动执行
+// 注意：应用用户需要通过 shell 脚本创建（create-user.sh），
+// 因为 MongoDB 初始化脚本无法直接访问环境变量
 
 // 切换到应用数据库
 db = db.getSiblingDB('calicosBlog');
-
-// 创建应用专用用户（密码将在部署时通过环境变量设置）
-// 注意：这里使用占位符，实际密码需要通过环境变量 MONGO_APP_PASSWORD 设置
-// 如果需要在初始化时创建用户，可以使用以下代码：
-/*
-db.createUser({
-  user: 'calico_user',
-  pwd: 'CHANGE_ME_IN_DEPLOYMENT', // 需要在部署时替换
-  roles: [
-    {
-      role: 'readWrite',
-      db: 'calicosBlog'
-    }
-  ]
-});
-*/
 
 // 创建集合（如果不存在）
 db.createCollection('users');
