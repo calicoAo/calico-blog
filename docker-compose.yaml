@@ -60,7 +60,7 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://www.calicovo.space}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://www.calicovo.space}
       NEXT_PUBLIC_CRYPTO_SECRET: ${CRYPTO_SECRET}
       NODE_ENV: production
     networks:
