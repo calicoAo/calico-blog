@@ -112,7 +112,21 @@ app.use('/api', (req, res, next) => {
 // 数据库连接
 // ============================================
 const connectMongoDB = async () => {
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://192.168.0.103:27017/calicosBlog';
+  // 从环境变量获取 MongoDB URI，如果没有设置则使用默认值
+  // 注意：在生产环境中，MONGODB_URI 应该通过 docker-compose.yaml 的环境变量设置
+  const mongoUri = process.env.MONGODB_URI;
+  
+  if (!mongoUri) {
+    console.error('❌ 错误：MONGODB_URI 环境变量未设置！');
+    console.error('   请在 .env 文件或 docker-compose.yaml 中设置 MONGODB_URI');
+    console.error('   格式：mongodb://用户名:密码@主机:端口/数据库名?authSource=数据库名');
+    return;
+  }
+  
+  // 隐藏密码，用于日志输出
+  const mongoUriForLog = mongoUri.replace(/:([^:@]+)@/, ':****@');
+  console.log('📡 正在连接 MongoDB...');
+  console.log('   连接地址:', mongoUriForLog);
   
   try {
     await mongoose.connect(mongoUri, {
