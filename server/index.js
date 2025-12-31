@@ -111,7 +111,19 @@ app.use('/api', (req, res, next) => {
 // ============================================
 // 数据库连接
 // ============================================
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.0.103:27017/calicosBlog')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.0.103:27017/calicosBlog', {
+  // 连接超时设置
+  serverSelectionTimeoutMS: 30000, // 30 秒内选择服务器
+  socketTimeoutMS: 45000, // 45 秒 socket 超时
+  connectTimeoutMS: 30000, // 30 秒连接超时
+  // Mongoose 缓冲设置
+  bufferTimeoutMS: 30000, // 30 秒缓冲超时（默认 10 秒）
+  bufferCommands: true, // 启用命令缓冲
+  // 其他选项
+  maxPoolSize: 10, // 最大连接池大小
+  minPoolSize: 2, // 最小连接池大小
+  maxIdleTimeMS: 30000, // 30 秒空闲超时
+})
   .then(() => console.log('✅ MongoDB 连接成功'))
   .catch(err => console.error('❌ MongoDB 连接失败:', err));
 

@@ -93,13 +93,13 @@ router.post('/login', loginLimiter, validateLogin, async (req, res) => {
       // 使用临时密钥解密（新方式）
       // 验证临时密钥是否有效
       if (!validateTranskey(transkey)) {
-        await LoginLog.create({
+        LoginLog.create({
           email,
           success: false,
           ip: clientIp,
           userAgent,
           reason: '临时密钥无效或已过期'
-        });
+        }).catch(err => console.error('记录登录日志失败:', err));
         return validationError(res, '临时密钥无效或已过期，请刷新页面重试');
       }
       
@@ -130,13 +130,13 @@ router.post('/login', loginLimiter, validateLogin, async (req, res) => {
         consumeTranskey(transkey);
       } catch (error) {
         console.error('密码解密错误:', error);
-        await LoginLog.create({
+        LoginLog.create({
           email,
           success: false,
           ip: clientIp,
           userAgent,
           reason: '密码格式错误'
-        });
+        }).catch(err => console.error('记录登录日志失败:', err));
         return validationError(res, '密码格式错误');
       }
     } else if (encryptedPassword) {
@@ -158,26 +158,26 @@ router.post('/login', loginLimiter, validateLogin, async (req, res) => {
         }
       } catch (error) {
         console.error('密码解密错误:', error);
-        await LoginLog.create({
+        LoginLog.create({
           email,
           success: false,
           ip: clientIp,
           userAgent,
           reason: '密码格式错误'
-        });
+        }).catch(err => console.error('记录登录日志失败:', err));
         return validationError(res, '密码格式错误');
       }
     } else if (req.body.password) {
       // 向后兼容：如果没有加密密码，使用普通密码
       password = req.body.password;
     } else {
-      await LoginLog.create({
+      LoginLog.create({
         email,
         success: false,
         ip: clientIp,
         userAgent,
         reason: '密码为空'
-      });
+      }).catch(err => console.error('记录登录日志失败:', err));
       return validationError(res, '密码不能为空');
     }
 
@@ -228,15 +228,15 @@ router.post('/login', loginLimiter, validateLogin, async (req, res) => {
       }
     }
 
-    // 记录登录日志
-    await LoginLog.create({
+    // 记录登录日志（非阻塞，避免影响登录流程）
+    LoginLog.create({
       userId: user?._id || null,
       email,
       success: loginSuccess,
       ip: clientIp,
       userAgent,
       reason: loginSuccess ? '' : failureReason
-    });
+    }).catch(err => console.error('记录登录日志失败:', err));
 
     // 如果登录失败，返回统一错误信息
     if (!loginSuccess) {
