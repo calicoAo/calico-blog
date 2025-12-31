@@ -29,32 +29,32 @@ if [ -z "$ROOT_PASSWORD" ]; then
 fi
 
 echo "📝 步骤 1: 删除旧用户（如果存在）..."
-docker exec calico-mongo mongosh -u "$ROOT_USERNAME" -p "$ROOT_PASSWORD" --authenticationDatabase admin --quiet <<EOF
-use $DB_NAME
+docker exec calico-mongo mongosh -u "$ROOT_USERNAME" -p "$ROOT_PASSWORD" --authenticationDatabase admin --quiet --eval "
+use('$DB_NAME');
 try {
-  db.dropUser("$APP_USERNAME");
-  print("✅ 旧用户已删除");
+  db.dropUser('$APP_USERNAME');
+  print('✅ 旧用户已删除');
 } catch (e) {
-  print("ℹ️  用户不存在，跳过删除");
+  print('ℹ️  用户不存在，跳过删除');
 }
-EOF
+"
 
 echo ""
 echo "📝 步骤 2: 创建新用户..."
-docker exec calico-mongo mongosh -u "$ROOT_USERNAME" -p "$ROOT_PASSWORD" --authenticationDatabase admin --quiet <<EOF
-use $DB_NAME
+docker exec calico-mongo mongosh -u "$ROOT_USERNAME" -p "$ROOT_PASSWORD" --authenticationDatabase admin --quiet --eval "
+use('$DB_NAME');
 db.createUser({
-  user: "$APP_USERNAME",
-  pwd: "$APP_PASSWORD",
+  user: '$APP_USERNAME',
+  pwd: '$APP_PASSWORD',
   roles: [
     {
-      role: "readWrite",
-      db: "$DB_NAME"
+      role: 'readWrite',
+      db: '$DB_NAME'
     }
   ]
 });
-print("✅ 用户创建成功: $APP_USERNAME");
-EOF
+print('✅ 用户创建成功: $APP_USERNAME');
+"
 
 echo ""
 echo "📝 步骤 3: 验证用户连接..."

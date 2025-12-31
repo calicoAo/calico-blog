@@ -34,28 +34,28 @@ echo "📝 正在创建/更新应用用户: $APP_USERNAME"
 echo "   数据库: $DB_NAME"
 
 # 在 MongoDB 容器中执行命令
-docker exec calico-mongo mongosh -u "$ROOT_USERNAME" -p "$ROOT_PASSWORD" --authenticationDatabase admin --quiet <<EOF
-use $DB_NAME
+docker exec calico-mongo mongosh -u "$ROOT_USERNAME" -p "$ROOT_PASSWORD" --authenticationDatabase admin --quiet --eval "
+use('$DB_NAME');
 try {
-  const user = db.getUser("$APP_USERNAME");
-  print("用户 $APP_USERNAME 已存在，正在更新密码...");
-  db.changeUserPassword("$APP_USERNAME", "$APP_PASSWORD");
-  print("✅ 用户密码已更新");
+  const user = db.getUser('$APP_USERNAME');
+  print('用户 $APP_USERNAME 已存在，正在更新密码...');
+  db.changeUserPassword('$APP_USERNAME', '$APP_PASSWORD');
+  print('✅ 用户密码已更新');
 } catch (e) {
-  print("用户不存在，正在创建...");
+  print('用户不存在，正在创建...');
   db.createUser({
-    user: "$APP_USERNAME",
-    pwd: "$APP_PASSWORD",
+    user: '$APP_USERNAME',
+    pwd: '$APP_PASSWORD',
     roles: [
       {
-        role: "readWrite",
-        db: "$DB_NAME"
+        role: 'readWrite',
+        db: '$DB_NAME'
       }
     ]
   });
-  print("✅ 应用用户创建成功: $APP_USERNAME");
+  print('✅ 应用用户创建成功: $APP_USERNAME');
 }
-EOF
+"
 
 echo "✅ 完成！"
 
