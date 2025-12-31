@@ -121,6 +121,15 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     exit 1
 fi
 
+# 创建 MongoDB 应用用户（如果不存在）
+echo "👤 检查/创建 MongoDB 应用用户..."
+if [ -f scripts/create-mongo-user.sh ]; then
+    chmod +x scripts/create-mongo-user.sh
+    ./scripts/create-mongo-user.sh || echo "⚠️  用户创建失败，请手动运行: ./scripts/create-mongo-user.sh"
+else
+    echo "⚠️  用户创建脚本不存在，跳过..."
+fi
+
 # 初始化数据库（如果是首次部署）
 if [ ! -f .db-initialized ]; then
     echo "🗄️  初始化数据库..."
